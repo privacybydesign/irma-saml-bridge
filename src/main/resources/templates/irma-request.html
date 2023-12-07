@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"/>
+        <title>Yivi SAML bridge</title>
+        <link rel="stylesheet" type="text/css" href="assets/app.css">
+    </head>
+    <body>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            window.LANGUAGE = [[${request.getAttribute("language")}]];
+            window.IRMA_SERVER = [[${request.getAttribute("irma_server")}]];
+            window.ASSERT_URL = [[${request.getAttribute("assert_url")}]];
+            window.ERROR_ASSERT_URL = [[${request.getAttribute("error_assert_url")}]];
+            window.ASSERT_PARAMETERS = [[${request.getAttribute("assert_parameters")}]];
+            window.ERROR = [[${request.getAttribute("error")}]];
+            window.ERROR_URL = [[${request.getAttribute("error_url")}]];
+            window.SESSION_DATA = [[${request.getAttribute("session_data")}]];
+            /*]]>*/
+        </script>
+
+        <noscript>
+            <p>For the use of this application you need to enable Javascript.</p>
+        </noscript>
+
+        <div id="root"></div>
+
+        <script type="module" src="assets/app.js"></script>
+    </body>
+</html>

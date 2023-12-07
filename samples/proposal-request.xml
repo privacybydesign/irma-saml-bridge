@@ -1,0 +1,17 @@
+<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" AssertionConsumerServiceURL="https://sidn1.cib.pre.connectis.com/broker/acs" Destination="https://irmabrug.a2.ota.sidn.nl/irma-saml-bridge/request" ForceAuthn="false" ID="_6870370f-d624-3251-b2d8-dd8e4a131342" IsPassive="false" IssueInstant="2020-03-12T15:42:43Z" ProviderName="Connectis" Version="2.0">
+    <saml:Issuer>sidn1.cib.pre.connectis.com-broker-irma</saml:Issuer>
+        <samlp:Extensions xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:req-attr="urn:oasis:names:tc:SAML:protocol:ext:req-attr">
+            <req-attr:RequestedAttributes>
+
+                <md:RequestedAttribute isRequired="true" Name="irma-demo.sidn-pbdf.email.email"
+                                       NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri" />
+
+                <md:RequestedAttribute isRequired="true" Name="irma-demo.sidn-pbdf.email.domain"
+                                       NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri" />
+
+        </req-attr:RequestedAttributes>
+    </samlp:Extensions>
+    <samlp:RequestedAuthnContext Comparison="minimum">
+        <saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</saml:AuthnContextClassRef>
+    </samlp:RequestedAuthnContext>
+</samlp:AuthnRequest>

@@ -1,0 +1,15 @@
+/artifacts/
+/target/
+/config.json
+.classpath
+.project
+.settings/
+*.crt
+*.der
+*.pub.der
+*.pem
+*.pub.pem
+*.iml
+.idea/
+/assets/node_modules
+/src/main/resources/static/assets

@@ -1,0 +1,66 @@
+version: '3.3'
+services:
+  irma:
+    build:
+      dockerfile: './irmago.Dockerfile'
+      context: 'docker'
+    user: "$USER_ID:$GROUP_ID"
+    expose: [8089]
+    environment:
+      TZ: Europe/Amsterdam
+    networks:
+      - default
+    ports:
+      - "8089:8089"
+    volumes:
+      - type: bind
+        source: ./dev-keys/irma-test.pem
+        target: /app/config/irma-test.pem
+      - type: bind
+        source: ./dev-keys/jwt.pub.pem
+        target: /app/config/sidn-irma-saml-bridge.pub.pem
+    command:
+      - "irma"
+      - "server"
+      - "--verbose"
+      - "--schemes-path=/app/schemes"
+      - "--schemes-update=0"
+      - "--port=8089"
+      - "--jwt-privkey-file=/app/config/irma-test.pem"
+      - "--url=http://192.168.0.2"
+      - "--no-email"
+      - "--no-tls"
+      - "--no-auth=0"
+      - "--requestors={\"sidn-irma-saml-bridge\": {\"auth_method\": \"publickey\", \"key_file\": \"/app/config/sidn-irma-saml-bridge.pub.pem\"}}"
+
+  # Note: we put nginx in between to handle CORS.
+  nginx:
+    image: nginx:1.19
+    depends_on:
+      - irma
+    volumes:
+      - "./docker/nginx.conf:/etc/nginx/nginx.conf:ro"
+    ports:
+      - "8081:80"
+    networks:
+      - default
+
+  server:
+    build: .
+    image: sidn-irma-saml-bridge
+    environment:
+      - LOGGING_FILE_PATH=/sidn-irma-saml-bridge/logs
+    volumes:
+      - type: volume
+        target: /sidn-irma-saml-bridge/logs
+      - type: bind
+        source: ./config.test.json
+        target: /root/config.json
+      - type: bind
+        source: ./dev-keys
+        target: /root/dev-keys
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+    working_dir: /root

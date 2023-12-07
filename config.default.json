@@ -1,0 +1,33 @@
+{
+	"issuerName": "sidn-irma-saml-bridge",
+	"host": "localhost:8080",
+	"postfix": "/irma-saml-bridge",
+	"jwtPrivateKeyPath": "./dev-keys/jwt.der",
+	"testIrmaPrivateKeyPath": null,
+	"irmaPublicKeyPath": "./dev-keys/irma-test.pub.der",
+	"samlCertificatePath": "./dev-keys/idp.crt",
+	"samlPrivateKeyPath": "./dev-keys/idp.der",
+	"samlMetadataPath": "./dev-keys/metadata",
+	"httpsUsed": false,
+	"requestTtlInSec": 900,
+	"responseTtlInSec": 900,
+	"defaultCondiscon": [
+		[
+			[
+				"irma-demo.gemeente.personalData.fullname"
+			]
+		]
+	],
+	"defaultMap": {
+		"host": "192.168.0.2:8089",
+		"irmaServiceHost": "irmaServiceHost",
+		"postfix": ""
+	},
+	"irmaMapping": {
+		"test": {
+			"host": "192.168.0.2:8089",
+			"irmaServiceHost": "irmaServiceHost",
+			"postfix": "/irmademo"
+		}
+	}
+}

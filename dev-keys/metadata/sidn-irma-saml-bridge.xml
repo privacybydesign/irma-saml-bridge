@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" cacheDuration="P0Y0M0DT0H0M30.000S" entityID="sidn-irma-saml-bridge"><md:SPSSODescriptor WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"><md:KeyDescriptor use="signing"><ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:X509Data><ds:X509Certificate>MIIFazCCA1OgAwIBAgIUArmbbiMPcfIRvceJBQzyvx0d2j4wDQYJKoZIhvcNAQELBQAwRTELMAkG&#13;
+A1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMg&#13;
+UHR5IEx0ZDAeFw0yMTAzMTcyMTAzMzlaFw0yMjAzMTcyMTAzMzlaMEUxCzAJBgNVBAYTAkFVMRMw&#13;
+EQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggIi&#13;
+MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCuIk2jp8qmitrzVzxQaHj1oJM+unJliNKcDjZk&#13;
+MRc4bSsVrNY64L/5yaMVqK+ATUJyZcOftafJmUOAY31ziuUDDAtJaeUp3acFq/8M1kyrQBsYBA0M&#13;
+MG80XtViS2crRy3i6bq15e4lUjioJCV3oHkzDQUnKLflFj2OEnKBFRNcltyMWOfeMyeE1gGSaRQU&#13;
+VQL0hpygYtriprsfOnOzJ1OljoBLaGQg+CxLMCNNUXPo89WFkJviNqs03iM7FREPULYXTuCn0WX5&#13;
+pvcz4F4N2n7gnz/OcRGz5nGEixbwzjS/tVi5DUM7zsC+4k4D9bgeMgvl2J90Iv3RZwvINKKKMU1K&#13;
+GCf9hp6liZDNhVUUnqcM6Gdtzvvy1FTcLxjoYRYv013Q/G3TgZ00BxPfZBWIG1p2KV4tbsl5R63z&#13;
+dmnqgu4rlPVJuASpwOFaLUnfcGdkv/qC9DkZ6RDF7WKTBQ9SlCE3NBRXkM3cZ9t14DbyNjFgEFFh&#13;
+BJAeZJU0he/YkLs9hpEItAbf98K9UQ4BtEOCvmxx6ZV0r1g+phtF/xgm1hRYkejV9zW6fXISKrh/&#13;
+9QihMffu3RGwNw4/6MeeerMRyJoP6fQAK/J59nGHmTQjTyJnnyH3kI30GcyQzkeGuNUmdGZgYmMx&#13;
+U9X+CkP5Yu/KEvTYC2B6Ey5iwrN6FfirNkrV/wIDAQABo1MwUTAdBgNVHQ4EFgQUtwpc1n7Weia9&#13;
+iZJvzoYz8A3zODMwHwYDVR0jBBgwFoAUtwpc1n7Weia9iZJvzoYz8A3zODMwDwYDVR0TAQH/BAUw&#13;
+AwEB/zANBgkqhkiG9w0BAQsFAAOCAgEAaBITkuWfu37A9npmYxdtd9X/6c8LqHaw2BP40p0WLNTG&#13;
+Nf0sVvSAG4ONEK/jxGqtHmh0MPu0cTEgm5Gx+QGVEK6cfrMibAKlG23yNW93fxT0tnZ5S52blstz&#13;
++O3ysnzeb2KnqURwUWe3z8iZpjZTl/E8r2pcKnlmzO3CaciW2BU0qhTeE3rgyEztyAo7vAv9Unjb&#13;
+Fqf0XO+5/ozTgooUiB1uR7BTMLotEQ5BBupvin9b27hy9Glxs+kbCh5AKqTjDqpuN+0Xu6yXMCWw&#13;
+mxRgREnY1arw+pMbBBuNyPJ+synkW1RbEL3fgb09LIaRBgDWXPIRgCG4yRq3T+aalcdeCy0hHZ9l&#13;
+NaNzbyx9Bzi5TkPNkTiQRTZUcoMKefMQ0R8MZKdscY9S+aRQpcXWDevXWK2O/VCbWdxfWHeelQrE&#13;
+ppz0JMUn3+w/HkLz5NVLz+4TY6IC3jxjt3xPwCmtZeU9ZY2nnDbZT8uWCiVsJj4fsfFs4/YDcVzl&#13;
+aK8r1YUA5fyOT2facOS5MT0jyPBKUif3kphTlBgS0WBgyi4MYnZYcNq+xyIs89xrgELFmNl2NYn9&#13;
+l7W0QR7KR5mXYooH/V6DR3A7Z5Ic51fEgjVwDO2WIAKHfIyRY04cBrsopuTDfn9bSPZbklr/PIbF&#13;
+4hXpUXPOEx9Oonowgq58UlT/njDuFxw=</ds:X509Certificate></ds:X509Data></ds:KeyInfo></md:KeyDescriptor><md:Organization><md:OrganizationName xml:lang="en">SIDN</md:OrganizationName><md:OrganizationDisplayName xml:lang="en">SIDN</md:OrganizationDisplayName><md:OrganizationURL xml:lang="en">http://localhost:8080/irma-saml-bridge/test/metadata</md:OrganizationURL></md:Organization><md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</md:NameIDFormat><md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="http://localhost:8080/irma-saml-bridge/test/return" index="0"/></md:SPSSODescriptor></md:EntityDescriptor>

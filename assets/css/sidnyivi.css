@@ -1,0 +1,12 @@
+body {
+	margin: 10px 0;
+	padding: 0;
+	width: 100%;
+}
+
+.yivi-modal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px 0;
+}

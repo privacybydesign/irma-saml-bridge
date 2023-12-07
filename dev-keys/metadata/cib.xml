@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" ID="_4f618642-2070-4a5e-a8fc-77c1e553e272" entityID="sidn1.cib.pre.connectis.com-broker-irma"><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference URI="#_4f618642-2070-4a5e-a8fc-77c1e553e272">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">
+<ec:InclusiveNamespaces xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#" PrefixList="xacml-saml"/>
+</ds:Transform>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>dNhD+3fe2F8h78xAewOFi7IVV+k2Rjz92RANG00VY58=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+WzRYK9FT917bEap1rE0fU7P75PYMYWgViIya19FIYImreK7d3vwt4uAG07BHa3FUhQFW0Xs0z/DQ
+rvNHKxaqq2Qmk+lNZuS8bLIQ0KsQz+4HJbM93X5juSbYoKR553P0YbIBCshlieGVpduZVed5oVna
+nD7YAUFbkruzG9cOlAnlGUzV6I1zab3dhwk6bIgRckUO2IF1H/XuBPGptX2UBud1+Oip/dKn2U0G
+JvZBXtcAq8Hb0v1SREQ0K+2l7TxR+LSMDZs9uadWFv0ylt3m96CzPULxQ6qbp0rYIY5+sX2yrISm
+DGUKn3eDOOImU2HFO4tF6OqqyDU3490l81rOFB4N4Zw7YV4JRTX/0KHztZJFQXsspun7ZcLz6Wqs
+WnqQZJl6BHc4U4PbvQ6psglwNG2cpWqD5qxHFn4RsE3OKOiGhVuPTxuLzuWJmNGWC4j1dnd4MCX6
+z5Xg8k/o3fL3dEth6/hnC4B0G6gb2e3DtmCKNdkhSeUny5EIvc87+GNwHMxw6d2y+KP/Rrfc/ONJ
+fKbiJcC2Zxgv7WXXWAQGV+G7nUwMhtvsfJxiFpXmIYK3dCcxpe3M84hj97H9lsqd0LUBFYVsLmXC
+iMgl90CmpO+RHCQ4N/YKT+RHaKvJnoXpVWGJiHCxIx0w7rKp5qSsuPxpmdHamZrM6f1y9XM27Xc=
+</ds:SignatureValue>
+<ds:KeyInfo>
+<ds:KeyName>4fe6b35402a42fd2f68156f3c964f87a9f5721285eae07f92a6eaa009b78db5f</ds:KeyName>
+</ds:KeyInfo>
+</ds:Signature>
+  <md:SPSSODescriptor AuthnRequestsSigned="true" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:KeyDescriptor use="signing">
+      <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        <ds:KeyName>4fe6b35402a42fd2f68156f3c964f87a9f5721285eae07f92a6eaa009b78db5f</ds:KeyName>
+        <ds:X509Data>
+          <ds:X509Certificate>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</ds:X509Certificate>
+        </ds:X509Data>
+      </ds:KeyInfo>
+    </md:KeyDescriptor>
+    <md:ArtifactResolutionService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://sidn1.cib.pre.connectis.com/broker/ars" index="0"/>
+    <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://sidn1.cib.pre.connectis.com/broker/acs" index="1" isDefault="true"/>
+    <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://sidn1.cib.pre.connectis.com/broker/acs" index="2" isDefault="false"/>
+    <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://sidn1.cib.pre.connectis.com/broker/acs" index="3" isDefault="false"/>
+  </md:SPSSODescriptor>
+  <md:Organization>
+    <md:OrganizationName xml:lang="en">Connectis</md:OrganizationName>
+    <md:OrganizationDisplayName xml:lang="en">Connectis</md:OrganizationDisplayName>
+    <md:OrganizationURL xml:lang="en">https://sidn1.cib.pre.connectis.com/broker</md:OrganizationURL>
+  </md:Organization>
+  <md:ContactPerson contactType="administrative"/>
+</md:EntityDescriptor>

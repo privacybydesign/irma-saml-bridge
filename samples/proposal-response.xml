@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<saml2p:Response xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol"
+                 Destination="https://sidn1.cib.pre.connectis.com/broker/acs" ID="dlPt7TSjQi8uXg0ZhECg"
+                 InResponseTo="_6870370f-d624-3251-b2d8-dd8e4a131342" IssueInstant="2020-03-12T15:42:52.445Z"
+                 Version="2.0">
+    <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">irmabrug.a2.ota.sidn.nl</saml2:Issuer>
+    <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        ... XML signature ...
+    </ds:Signature>
+    <saml2p:Status>
+        <saml2p:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+    </saml2p:Status>
+    <saml2:Assertion xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion" ID="_646C50743754536A516938755867305A68454367"
+                     IssueInstant="2020-03-12T15:42:52.445Z" Version="2.0">
+        <saml2:Issuer>irmabrug.a2.ota.sidn.nl</saml2:Issuer>
+        <saml2:Subject>
+            <saml2:NameID Format="urn:oasis:names:tc:SAML:2.0:nameid-format:transient">
+                a24b6072-e198-4d59-a81e-aab6051659a8
+            </saml2:NameID>
+            <saml2:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
+                <saml2:SubjectConfirmationData InResponseTo="_6870370f-d624-3251-b2d8-dd8e4a131342"
+                                               NotOnOrAfter="2020-03-12T15:48:52.445Z"
+                                               Recipient="https://sidn1.cib.pre.connectis.com/broker/acs"/>
+            </saml2:SubjectConfirmation>
+        </saml2:Subject>
+        <saml2:Conditions NotBefore="2020-03-12T15:42:52.445Z" NotOnOrAfter="2020-03-12T15:48:52.445Z">
+            <saml2:AudienceRestriction>
+                <saml2:Audience>sidn1.cib.pre.connectis.com-broker-irma</saml2:Audience>
+            </saml2:AudienceRestriction>
+        </saml2:Conditions>
+        <saml2:AuthnStatement AuthnInstant="2020-03-12T15:42:52.445Z" SessionNotOnOrAfter="2020-03-12T15:48:52.445Z">
+            <saml2:AuthnContext>
+                <saml2:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+                </saml2:AuthnContextClassRef>
+            </saml2:AuthnContext>
+        </saml2:AuthnStatement>
+        <saml2:AttributeStatement>
+            <saml2:Attribute Name="irma-demo.sidn-pbdf.email.email">
+                <saml2:AttributeValue xsi:type="xs:string">technicalsupport@signicat.com</saml2:AttributeValue>
+            </saml2:Attribute>
+            <saml2:Attribute Name="irma-demo.sidn-pbdf.email.domain">
+                <saml2:AttributeValue xsi:type="xs:string">signicat.com</saml2:AttributeValue>
+            </saml2:Attribute>
+        </saml2:AttributeStatement>
+    </saml2:Assertion>
+</saml2p:Response>
