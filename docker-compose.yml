@@ -1,10 +1,7 @@
 version: '3.3'
 services:
   irma:
-    build:
-      dockerfile: './irmago.Dockerfile'
-      context: 'docker'
-    user: "$USER_ID:$GROUP_ID"
+    image: ghcr.io/privacybydesign/irma:v0.15.0
     expose: [8089]
     environment:
       TZ: Europe/Amsterdam
@@ -20,10 +17,8 @@ services:
         source: ./dev-keys/jwt.pub.pem
         target: /app/config/sidn-irma-saml-bridge.pub.pem
     command:
-      - "irma"
       - "server"
       - "--verbose"
-      - "--schemes-path=/app/schemes"
       - "--schemes-update=0"
       - "--port=8089"
       - "--jwt-privkey-file=/app/config/irma-test.pem"
@@ -31,7 +26,7 @@ services:
       - "--no-email"
       - "--no-tls"
       - "--no-auth=0"
-      - "--requestors={\"sidn-irma-saml-bridge\": {\"auth_method\": \"publickey\", \"key_file\": \"/app/config/sidn-irma-saml-bridge.pub.pem\"}}"
+      - "--requestors={\"sidn-irma-saml-bridge\": {\"auth_method\": \"publickey\", \"key_file\": \"/app/config/sidn-irma-saml-bridge.pub.pem\", \"host_perms\": [\"*\"]}}"
 
   # Note: we put nginx in between to handle CORS.
   nginx:
