@@ -9,6 +9,7 @@ import nl.sidn.irma.saml_bridge.model.AssertRequest;
 import nl.sidn.irma.saml_bridge.model.RedirectInstruction;
 import nl.sidn.irma.saml_bridge.model.RequestError;
 import nl.sidn.irma.saml_bridge.util.JwtUtil;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -73,7 +74,7 @@ public class ErrorAssertTestController {
             RequestError requestError,
             String endpointUrl) throws IOException, DecodingException {
         if (requestError != null) {
-            log.info("Test Error Assert with requestError: {}", requestError);
+            log.info("Test Error Assert with requestError: {}", StringEscapeUtils.escapeJava(requestError.toString()));
         }
 
         String[][][] condiscon = { { { ATTRIBUTE_KEY } } };
