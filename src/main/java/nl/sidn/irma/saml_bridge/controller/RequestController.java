@@ -360,20 +360,6 @@ public class RequestController {
                     model);
         }
 
-        // Create the JWT request intended for IRMA.
-        TreeMap<String, Object> content = new TreeMap<>();
-        content.put("@context", "https://irma.app/ld/request/disclosure/v2");
-        content.put("disclose", condiscon);
-
-        TreeMap<String, Object> sprequest = new TreeMap<>();
-        sprequest.put("request", content);
-        sprequest.put("validity", 30); // Seconds that JWT session result is valid
-        // sprequest.put("timeout", 240); // Seconds that JWT session is valid before it
-        // times out
-
-        // Sign with our private key
-        String token = jwtUtil.createJwtToken("verification_request", "sprequest", sprequest);
-
         // Custom Connectis method to retrieve service provider identity.
         String spName = authnRequest.getProviderName();
 
@@ -389,32 +375,43 @@ public class RequestController {
         String protocol = config.getProtocol();
         String host;
         String postfix;
-        String irmaServiceHost;
+        String irmaServiceBaseUrl;
 
         if (path == null) {
             // No specific mapping found, use generic mapping.
-            host = protocol + config.getDefaultMap().getHost();
-            irmaServiceHost = protocol + config.getDefaultMap().getIrmaServiceHost();
+            host = config.getDefaultMap().getHost();
+            irmaServiceBaseUrl = protocol + config.getDefaultMap().getIrmaServiceHost();
             postfix = config.getDefaultMap().getPostfix();
         } else {
             // Use specific mapping.
-            host = protocol + path.getHost();
-            irmaServiceHost = protocol + path.getIrmaServiceHost();
+            host = path.getHost();
+            irmaServiceBaseUrl = protocol + path.getIrmaServiceHost();
             postfix = path.getPostfix();
         }
 
         host = host.replace("{spName}", spName);
         postfix = postfix.replace("{spName}", spName);
 
+        // Create the JWT request intended for IRMA.
+        TreeMap<String, Object> content = new TreeMap<>();
+        content.put("@context", "https://irma.app/ld/request/disclosure/v2");
+        content.put("disclose", condiscon);
+        content.put("host", host);
+
+        TreeMap<String, Object> sprequest = new TreeMap<>();
+        sprequest.put("request", content);
+        sprequest.put("validity", 30); // Seconds that JWT session result is valid
+        // sprequest.put("timeout", 240); // Seconds that JWT session is valid before it
+        // times out
+
+        // Sign with our private key
+        String token = jwtUtil.createJwtToken("verification_request", "sprequest", sprequest);
+
         // start the IRMA session from the backend to see if it is possible to start
         // without errors
         String irmaSessionData = null;
         try {
-            irmaSessionData = irmaService.startSession(token, irmaServiceHost + postfix);
-
-            // replace the irmaServiceHost in the response back to the host, so the frontend
-            // used the correct host
-            irmaSessionData = irmaSessionData.replace(irmaServiceHost, host);
+            irmaSessionData = irmaService.startSession(token, irmaServiceBaseUrl + postfix);
         } catch (BridgeException e) {
             // looging already done in the irmaService
             return showError(RequestError.builder()
@@ -432,7 +429,10 @@ public class RequestController {
         // support in irma-web to switch language manually.
         String language = "nl";
 
-        request.setAttribute("irma_server", host + postfix);
+        // Use a URL with the external host to prevent CORS issues.
+        String externalIrmaServiceBaseUrl = protocol + host;
+
+        request.setAttribute("irma_server", externalIrmaServiceBaseUrl + postfix);
         request.setAttribute("language", language);
         request.setAttribute("session_data", irmaSessionData);
         request.setAttribute("assert_url", ourPostfix + "/assert");
@@ -457,7 +457,7 @@ public class RequestController {
         // which is under the guise of a client hostname.
         // As such we need to give permission to perform an AJAX request to that
         // hostname.
-        response.setHeader("Access-Control-Allow-Origin", host);
+        response.setHeader("Access-Control-Allow-Origin", externalIrmaServiceBaseUrl);
 
         response.setContentType("text/html");
 
