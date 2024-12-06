@@ -1,6 +1,8 @@
 # irma-saml-bridge
 IRMA-SAML bridge enabling IRMA as a Service via the Signicat Identity Broker. It acts as a SAML Identity Provider, giving access to IRMA credentials as SAML attributes.
 
+In the `docs` directory you can find a [flow diagram](docs/flow_diagram.pdf) and [endpoint documentation](docs/endpoints.pdf).
+
 ## Quick start
 ### Setup
 You require `docker` to be installed, including `docker-compose`. This setup was tested on **Ubuntu 20.04 LTS**.
@@ -90,7 +92,7 @@ docker-compose up
 
 You can now visit [the test endpoint](http://localhost:8080/irma-saml-bridge/test/request) with your browser.
 This endpoint initiates the Service Provider so-called Authentication Request to our IRMA SAML bridge Identity Provider.
-You will be redirected immediately.
+You will be redirected immediately. An overview of all the different test endpoints can be found [below](#test-endpoint-overview).
 
 Now you should see an IRMA QR code. If not, something is wrong with your setup. Note that you have to enable **developer mode** in the IRMA app before scanning this QR code will work (as the IRMA instance is not running in Production mode). Scan the QR-code and issue your name.
 
@@ -102,6 +104,35 @@ This is a placeholder page to which you have been redirected. No SAML response w
 ```
 
 This placeholder page does not test the consumption of the SAML response, only the consumption of a valid SAML Authentication Request. For an end-to-end test, we will now integrate with a public service.
+
+#### Test endpoint overview
+The SAML bridge supports multiple request formats for different Signicat use cases. Below you can find an overview of the different request formats with a URL to generate a test request using that format.
+
+- Default request format (uses RequestedAttributes extension without any specific attributes being requested; this means `defaultCondiscon` from the configuration is used)
+
+  https://localhost:8080/irma-saml-bridge/test/request
+
+- RequestedAttributes extension
+
+  https://localhost:8080/irma-saml-bridge/test/request?mode=attributes&request=%5B%22irma-demo.sidn-pbdf.email.email%22%2C%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D
+
+- Condiscon extension (`<md:RequestedAttribute Name="condiscon" ...>...</md:RequestedAttribute>`)
+
+  https://localhost:8080/irma-saml-bridge/test/request?mode=condiscon&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
+
+- Condiscon extension for Signicat NextGen broker (`<md:RequestedAttribute Name="signicat:param:condiscon" ...>...</md:RequestedAttribute>`)
+
+  https://localhost:8080/irma-saml-bridge/test/request?mode=condiscon-signicat&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
+
+- Condiscon via NameID
+
+  http://localhost:8080/irma-saml-bridge/test/request?mode=condiscon-nameid&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
+
+- Condiscon via `<Attribute/>` element
+
+  https://localhost:8080/irma-saml-bridge/test/request?mode=condiscon-attribute&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
+
+You can change the condiscons and attribute requests in the URLs above to do other types of requests.
 
 ### SAMLtest
 First, you must establish a metadata link between your IdP and the SAMLtest Service Prodiver by using the [upload form](https://samltest.id/upload.php). Upload the [metadata file](http://127.0.0.1:8080/irma-saml-bridge/metadata) to this form.
