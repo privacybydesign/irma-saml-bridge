@@ -82,7 +82,6 @@ class YiviLogin extends React.Component {
                 ? this._renderError()
                 : <section id="yivi-web-form"/>
             }
-            <img className="sidn-logo" src={require('../img/poweredby_fc.svg')}/>
         </div>;
     }
 }
