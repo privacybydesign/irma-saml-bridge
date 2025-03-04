@@ -400,6 +400,9 @@ public class RequestController {
 
         TreeMap<String, Object> sprequest = new TreeMap<>();
         sprequest.put("request", content);
+        Treemap<String, Object> nextSession = new TreeMap<>();
+        nextSession.put("url", "https://demos.staging.yivi.app/get_session_request.php");
+        sprequest.put("nextSession", nextSession);
         sprequest.put("validity", 30); // Seconds that JWT session result is valid
         // sprequest.put("timeout", 240); // Seconds that JWT session is valid before it
         // times out
