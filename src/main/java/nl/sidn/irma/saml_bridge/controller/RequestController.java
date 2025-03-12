@@ -433,7 +433,7 @@ public class RequestController {
         String language = "nl";
 
         // Use a URL with the external host to prevent CORS issues.
-        String externalIrmaServiceBaseUrl = protocol + host;
+        String externalIrmaServiceBaseUrl = irmaServiceBaseUrl;
 
         request.setAttribute("irma_server", externalIrmaServiceBaseUrl + postfix);
         request.setAttribute("language", language);
