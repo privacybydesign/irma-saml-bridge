@@ -32,7 +32,8 @@ class YiviSessionHandler {
                         const postfix = this._sessionData.sessionPtr.u.match(regex)[1];
                         this._sessionData.sessionPtr.u = `${server}/irma/session/${postfix}`;
                         return this._sessionData.sessionPtr;
-                    }
+                    },
+                    frontendRequest: () => this._sessionData.frontendRequest
                 },
                 result: {
                     url: (o) => `${o.url}/session/${this._sessionData.token}/result-jwt`,
