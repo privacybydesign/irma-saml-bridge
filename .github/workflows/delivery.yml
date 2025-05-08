@@ -52,7 +52,7 @@ jobs:
 
       - name: Build container and push to GitHub Container Registry
         uses: docker/build-push-action@v5
-        if: ${{ ! contains(["schedule", "pull_request"], github.event_name) }}
+        if: ${{ ! contains(fromJSON('["schedule", "pull_request"]'), github.event_name) }}
         with:
           context: .
           push: true
