@@ -12,7 +12,7 @@ import java.sql.Date;
 import java.time.Instant;
 import java.util.Map;
 
-import static io.jsonwebtoken.Jwts.parserBuilder;
+import static io.jsonwebtoken.Jwts.parser;
 
 @Service
 public class JwtUtil {
@@ -29,17 +29,17 @@ public class JwtUtil {
     }
 
     public Jws<Claims> getClaims(Key key, String claims) {
-        return parserBuilder()
+        return parser()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(claims);
+                .parseSignedClaims(claims);
     }
 
     public String createJwtToken(String subject, String claimName, Object claim) {
         return Jwts.builder()
-                .setIssuedAt(Date.from(Instant.now()))
-                .setIssuer(this.configurationService.getConfiguration().getIssuerName())
-                .setSubject(subject)
+                .issuedAt(Date.from(Instant.now()))
+                .issuer(this.configurationService.getConfiguration().getIssuerName())
+                .subject(subject)
                 .signWith(this.keyService.getJwtPrivateKey())
                 .claim(claimName, claim)
                 .compact();
@@ -47,11 +47,11 @@ public class JwtUtil {
 
     public String createTestIrmaJwtTokenWithClaims(String issuer, String subject, Map<String, Object> claims) {
         return Jwts.builder()
-                .setIssuedAt(Date.from(Instant.now()))
-                .setIssuer(issuer)
-                .setSubject(subject)
+                .issuedAt(Date.from(Instant.now()))
+                .issuer(issuer)
+                .subject(subject)
                 .signWith(this.keyService.getTestIrmaPrivateKey())
-                .setClaims(claims)
+                .claims(claims)
                 .compact();
     }
 }

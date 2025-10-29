@@ -71,7 +71,7 @@ public class AssertController {
         }
 
         // Unpack the Assertion parameters.
-        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getBody());
+        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
 
         // Verify that IRMA response is valid and present
         if (disclosure.getAttributes().isEmpty() || !"VALID".equals(disclosure.getProofStatus())) {

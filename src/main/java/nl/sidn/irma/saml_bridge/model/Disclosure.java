@@ -12,8 +12,8 @@ import java.util.TreeMap;
 
 /**
  * An IRMA disclosure extracted from a JSON object.
- * 
- * See https://irma.app/docs/api-irma-server/#get-session-token-result for the structure of the response.
+ * <p>
+ * See <a href="https://irma.app/docs/api-irma-server/#get-session-token-result">Yivi Docs</a> for the structure of the response.
  */
 @Data
 public class Disclosure {
@@ -27,19 +27,19 @@ public class Disclosure {
 	private String token;
 
 	/**
-	 * Extract a Disclosure from a JWT IRMA session result.
-	 * 
-	 * @param jwt A JWT session result adhering to the documentation as per https://irma.app/docs/api-irma-server/#get-session-token-result.
-	 * @return The disclosure.
-	 * @throws MalformedException
-	 */
+     * Extract a Disclosure from a JWT IRMA session result.
+     *
+     * @param jwt A JWT session result adhering to the documentation as per <a href="https://irma.app/docs/api-irma-server/#get-session-token-result">get-session-token-result</a>.
+     * @return The disclosure.
+     * @throws MalformedException The malformed exception.
+     */
 	public static Disclosure fromJwt(Jws<Claims> jwt) throws MalformedException {
 		ArrayList<ArrayList<Map<String, Object>>> disclosed;
 
 		try {
 			// First allocate a temporary value, due to analysis bug in Eclipse
 			@SuppressWarnings("unchecked")
-			ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getBody().get("disclosed");
+			ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getPayload().get("disclosed");
 			disclosed = tmp;
 
 		} catch (ClassCastException e) {
@@ -69,15 +69,15 @@ public class Disclosure {
 
 		Disclosure result = new Disclosure();
 		result.attributes = attributes;
-		result.proofStatus= (String) jwt.getBody().get("proofStatus");
-		result.token = (String) jwt.getBody().get("token");
+		result.proofStatus= (String) jwt.getPayload().get("proofStatus");
+		result.token = (String) jwt.getPayload().get("token");
 
 		return result;
 	}
 
 	/**
 	 * Checks whether our attributes fulfill the specified condiscon.
-	 * @param condiscon
+	 * @param condiscon The condiscon to check.
 	 * @return Compliance or failure.
 	 */
 	public boolean fulfillsCondiscon(String[][][] condiscon) {
@@ -91,7 +91,7 @@ public class Disclosure {
 
 	/**
 	 * Checks whether our attributes fulfill the specified discon.
-	 * @param discon
+	 * @param discon The discon to check.
 	 * @return Compliance or failure.
 	 */
 	public boolean fulfillsDiscon(String[][] discon) {
@@ -105,12 +105,12 @@ public class Disclosure {
 
 	/**
 	 * Checks whether our attributes fulfill the specified con.
-	 * @param con
+	 * @param con The con to check.
 	 * @return Compliance or failure.
 	 */
 	public boolean fulfillsCon(String[] con) {
 		for (String id : con) {
-			if (!this.attributes.keySet().contains(id)) {
+			if (!this.attributes.containsKey(id)) {
 				return false;
 			}
 		}

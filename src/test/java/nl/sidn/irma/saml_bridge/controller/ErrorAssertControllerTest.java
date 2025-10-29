@@ -3,7 +3,7 @@ package nl.sidn.irma.saml_bridge.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.Jwts;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.*;
 import nl.sidn.irma.saml_bridge.service.KeyService;
@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -44,13 +44,13 @@ class ErrorAssertControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private KeyService keyService;
 
-    @MockBean
+    @MockitoBean
     JwtUtil jwtUtil;
 
-    @MockBean
+    @MockitoBean
     private RedirectInstructionService redirectInstructionService;
 
     @Autowired
@@ -67,11 +67,11 @@ class ErrorAssertControllerTest {
         params.put("condiscon", "condiscon");
         params.put("relay_state", "relay_state");
 
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
     }
 
@@ -112,7 +112,6 @@ class ErrorAssertControllerTest {
     @Test
     void errorTestWithBridgeException() throws Exception {
         AssertRequest assertRequestMock = assertRequest();
-        RedirectInstruction redirectInstructionMock = redirectInstruction();
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(ResultStatus.class))).thenThrow(new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)

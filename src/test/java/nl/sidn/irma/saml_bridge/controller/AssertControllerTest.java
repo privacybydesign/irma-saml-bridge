@@ -3,7 +3,7 @@ package nl.sidn.irma.saml_bridge.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.Jwts;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.*;
 import nl.sidn.irma.saml_bridge.service.KeyService;
@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -44,13 +44,13 @@ class AssertControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private KeyService keyService;
 
-    @MockBean
+    @MockitoBean
     JwtUtil jwtUtil;
 
-    @MockBean
+    @MockitoBean
     private RedirectInstructionService redirectInstructionService;
 
     @Autowired
@@ -75,14 +75,14 @@ class AssertControllerTest {
         params.put("condiscon", objectMapperTest.writeValueAsString(new String[][][]{{{"12345"}}}));
         params.put("relay_state", "relay_state");
 
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
         claims.put("proofStatus", "VALID");
         claims.put("token", "token");
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
@@ -110,14 +110,14 @@ class AssertControllerTest {
         params.put("condiscon", objectMapperTest.writeValueAsString(new String[][][]{{{"12345"}}}));
         params.put("relay_state", "relay_state");
 
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("disclosed", "malformedClaim");
         claims.put("proofStatus", "VALID");
         claims.put("token", "token");
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
@@ -143,14 +143,14 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("disclosed", defaultDiscloseClaims("PRESENT1"));
         claims.put("proofStatus", "VALID");
         claims.put("token", "token");
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -173,14 +173,14 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
         claims.put("proofStatus", "VALID1");
         claims.put("token", "token");
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -203,14 +203,14 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
         claims.put("proofStatus", "VALID");
         claims.put("token", "token");
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
 
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
@@ -234,14 +234,14 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
+        Claims claims = Jwts.claims().build();
         claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
         claims.put("proofStatus", "VALID");
         claims.put("token", "token");
         claims.put("aparams", params);
 
-        Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
+        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenThrow(new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)

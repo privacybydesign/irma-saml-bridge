@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 @Slf4j
@@ -46,11 +47,12 @@ public class ErrorAssertController {
 
     /**
      * Endpoint, who handles a general error from the frontend
-     * @param request
-     * @param response
-     * @throws IOException
+     *
+     * @param request  The HTTP request.
+     * @param response The HTTP response.
+     * @throws IOException The exception is thrown when something goes wrong during IO.
      */
-    @PostMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public void error(
             HttpServletRequest request,
             HttpServletResponse response
@@ -61,11 +63,12 @@ public class ErrorAssertController {
 
     /**
      * Endpoint, who handles the abort from the frontend
-     * @param request
-     * @param response
-     * @throws IOException
+     *
+     * @param request  The HTTP request.
+     * @param response The HTTP response.
+     * @throws IOException The exception is thrown when something goes wrong during IO.
      */
-    @PostMapping(value="/abort", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/abort", produces = MediaType.APPLICATION_JSON_VALUE)
     public void errorAbort(
             HttpServletRequest request,
             HttpServletResponse response
@@ -89,13 +92,13 @@ public class ErrorAssertController {
         Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPrivateKey(), assertRequest.getParameters());
 
         // Unpack the Assertion parameters.
-        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getBody());
-        if(requestError != null) {
+        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
+        if (requestError != null) {
             assertParameters.setRequestError(requestError);
         }
 
         //something went wrong in the frontend, we don't have a specific error
-        if(assertParameters.getRequestError() == null) {
+        if (assertParameters.getRequestError() == null) {
             assertParameters.setRequestError(RequestError.builder()
                     .statusCode(HttpStatus.BAD_REQUEST.value())
                     .message("Something went wrong in the frontend")
