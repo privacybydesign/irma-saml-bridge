@@ -15,60 +15,70 @@ import java.security.spec.InvalidKeySpecException;
 
 /**
  * A service that reads all certificates and keys from disk and keeps them in memory.
- * 
+ * <p>
  * Must be configured using system environment variables.
  */
 @Getter
 @Service
 public class KeyService {
-	/** Private key which we use to sign JWT messages */
-	private RSAPrivateKey jwtPrivateKey;
+    /**
+     * Private key which we use to sign JWT messages
+     */
+    private RSAPrivateKey jwtPrivateKey;
 
-	/** Private key used to simulate the IRMA go instance, might be NULL (i.e. in production) */
-	private RSAPrivateKey testIrmaPrivateKey;
-	
-	/** Public key of the IRMA go instance we will communicate with, used to verify their messages */
-	private RSAPublicKey irmaPublicKey;
+    /**
+     * Private key used to simulate the IRMA go instance, might be NULL (i.e. in production)
+     */
+    private RSAPrivateKey testIrmaPrivateKey;
 
-	/** Certificate used to sign SAML responses and assertions */
-	private X509Certificate samlCertificate;
+    /**
+     * Public key of the IRMA go instance we will communicate with, used to verify their messages
+     */
+    private RSAPublicKey irmaPublicKey;
 
-	/** Private key used to sign SAML responses and assertions */
-	private RSAPrivateKey samlPrivateKey;
+    /**
+     * Certificate used to sign SAML responses and assertions
+     */
+    private X509Certificate samlCertificate;
 
-	private final ConfigurationService configurationService;
+    /**
+     * Private key used to sign SAML responses and assertions
+     */
+    private RSAPrivateKey samlPrivateKey;
 
-	private final KeyReader keyReader;
+    private final ConfigurationService configurationService;
 
-	public KeyService(
-			ConfigurationService configurationService,
-			KeyReader keyReader
-	) throws CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, IOException {
-		this.configurationService = configurationService;
-		this.keyReader = keyReader;
-		initialize();
-	}
+    private final KeyReader keyReader;
 
-	/**
-	 * Read all files from disk.
-	 * Will fail when any file is not configured, unavailable or malformed.
-	 * 
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
-	 * @throws CertificateException
-	 */
-	private void initialize() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, CertificateException {
-		Configuration conf = configurationService.getConfiguration();
+    public KeyService(
+            ConfigurationService configurationService,
+            KeyReader keyReader
+    ) throws CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+        this.configurationService = configurationService;
+        this.keyReader = keyReader;
+        initialize();
+    }
 
-		this.jwtPrivateKey = keyReader.getPrivate(conf.getJwtPrivateKeyPath());
-		this.irmaPublicKey = keyReader.getPublic(conf.getIrmaPublicKeyPath());
-		this.samlCertificate = keyReader.getCertificate(conf.getSamlCertificatePath());
-		this.samlPrivateKey = keyReader.getPrivate(conf.getSamlPrivateKeyPath());
+    /**
+     * Read all files from disk.
+     * Will fail when any file is not configured, unavailable or malformed.
+     *
+     * @throws InvalidKeySpecException  The invalid key spec exception is thrown when a key is malformed.
+     * @throws NoSuchAlgorithmException The no such algorithm exception is thrown when the RSA algorithm is not supported.
+     * @throws IOException              The IO exception is thrown when a file could not be read.
+     * @throws CertificateException     The certificate exception is thrown when a certificate is malformed.
+     */
+    private void initialize() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, CertificateException {
+        Configuration conf = configurationService.getConfiguration();
 
-		String irmaPrivateKeyTest = conf.getTestIrmaPrivateKeyPath();
-		if (irmaPrivateKeyTest != null) {
-			this.testIrmaPrivateKey = keyReader.getPrivate(irmaPrivateKeyTest);
-		}
-	}
+        this.jwtPrivateKey = keyReader.getPrivate(conf.getJwtPrivateKeyPath());
+        this.irmaPublicKey = keyReader.getPublic(conf.getIrmaPublicKeyPath());
+        this.samlCertificate = keyReader.getCertificate(conf.getSamlCertificatePath());
+        this.samlPrivateKey = keyReader.getPrivate(conf.getSamlPrivateKeyPath());
+
+        String irmaPrivateKeyTest = conf.getTestIrmaPrivateKeyPath();
+        if (irmaPrivateKeyTest != null) {
+            this.testIrmaPrivateKey = keyReader.getPrivate(irmaPrivateKeyTest);
+        }
+    }
 }

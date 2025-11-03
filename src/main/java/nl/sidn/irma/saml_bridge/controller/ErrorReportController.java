@@ -1,14 +1,14 @@
 package nl.sidn.irma.saml_bridge.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import nl.sidn.irma.saml_bridge.model.ClientError;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
@@ -23,7 +23,8 @@ public class ErrorReportController {
     ) {
         this.objectMapper = objectMapper;
     }
-    @PostMapping(value="")
+
+    @PostMapping(value = "")
     public void report(
             HttpServletRequest request,
             HttpServletResponse response

@@ -1,5 +1,6 @@
 package nl.sidn.irma.saml_bridge.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import nl.sidn.irma.saml_bridge.service.OpenSamlService;
 import org.opensaml.core.xml.io.MarshallingException;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;

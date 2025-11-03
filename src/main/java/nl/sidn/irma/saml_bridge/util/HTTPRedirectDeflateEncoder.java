@@ -3,7 +3,7 @@
  * API instead of the javax servlet API.
  *
  * The original license is included below.
- * 
+ *
  * Licensed to the University Corporation for Advanced Internet Development,
  * Inc. (UCAID) under one or more contributor license agreements.  See the
  * NOTICE file distributed with this work for additional information regarding
@@ -22,22 +22,8 @@
 
 package nl.sidn.irma.saml_bridge.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-
-import javax.annotation.Nonnull;
+import com.google.common.collect.Lists;
 import jakarta.servlet.http.HttpServletResponse;
-
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.codec.EncodingException;
@@ -46,7 +32,6 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.net.URLBuilder;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.SerializeSupport;
-
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
@@ -70,42 +55,71 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import com.google.common.collect.Lists;
+import javax.annotation.Nonnull;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * SAML 2.0 HTTP Redirect encoder using the DEFLATE encoding method.
- * 
+ * <p>
  * This encoder only supports DEFLATE compression.
  */
 public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
-    /** HTTPServletResponse used to encode message to */
-    private HttpServletResponse httpServletResponse;
+    /**
+     * HTTPServletResponse used to encode message to
+     */
+    private final HttpServletResponse httpServletResponse;
 
-    /** Message context. */
+    /**
+     * Message context.
+     */
     private MessageContext messageContext;
 
-    /** Whether the decoder is initialized */
+    /**
+     * Whether the decoder is initialized
+     */
     private boolean isInitialized;
 
-    /** Whether the decoder is destroyed */
+    /**
+     * Whether the decoder is destroyed
+     */
     private boolean isDestroyed;
 
-    /** Params which are disallowed from appearing in the input endpoint URL. */
+    /**
+     * Params which are disallowed from appearing in the input endpoint URL.
+     */
     @Nonnull
     @NonnullElements
     private static final Set<String> DISALLOWED_ENDPOINT_QUERY_PARAMS = Set.of("SAMLEncoding", "SAMLRequest",
             "SAMLResponse", "RelayState", "SigAlg", "Signature");
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private final Logger log = LoggerFactory.getLogger(HTTPRedirectDeflateEncoder.class);
 
-    /** Constructor. */
+    /**
+     * Constructor.
+     */
     public HTTPRedirectDeflateEncoder(HttpServletResponse response) {
         httpServletResponse = response;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
     public String getBindingURI() {
         return SAMLConstants.SAML2_REDIRECT_BINDING_URI;
     }
@@ -113,7 +127,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
     @Override
     public void encode() throws MessageEncodingException {
         final Object outboundMessage = messageContext.getMessage();
-        if (outboundMessage == null || !(outboundMessage instanceof SAMLObject)) {
+        if (!(outboundMessage instanceof SAMLObject)) {
             throw new MessageEncodingException("No outbound SAML message contained in message context");
         }
 
@@ -138,11 +152,9 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Gets the response URL from the message context.
-     * 
+     *
      * @param messageContext current message context
-     * 
      * @return response URL from the message context
-     * 
      * @throws MessageEncodingException throw if no relying party endpoint is
      *                                  available
      */
@@ -156,12 +168,11 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Removes the signature from the protocol message.
-     * 
+     *
      * @param message current message context
      */
     protected void removeSignature(final SAMLObject message) {
-        if (message instanceof SignableSAMLObject) {
-            final SignableSAMLObject signableMessage = (SignableSAMLObject) message;
+        if (message instanceof final SignableSAMLObject signableMessage) {
             if (signableMessage.isSigned()) {
                 log.debug("Removing SAML protocol message signature");
                 signableMessage.setSignature(null);
@@ -171,11 +182,9 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * DEFLATE (RFC1951) compresses the given SAML message.
-     * 
+     *
      * @param message SAML message
-     * 
      * @return DEFLATE compressed message
-     * 
      * @throws MessageEncodingException thrown if there is a problem compressing the
      *                                  message
      */
@@ -185,10 +194,10 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
             final String messageStr = SerializeSupport.nodeToString(marshallMessage(message));
 
             try (final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-                    final DeflaterOutputStream deflaterStream = new NoWrapAutoEndDeflaterOutputStream(bytesOut,
-                            Deflater.DEFLATED)) {
+                 final DeflaterOutputStream deflaterStream = new NoWrapAutoEndDeflaterOutputStream(bytesOut,
+                         Deflater.DEFLATED)) {
 
-                deflaterStream.write(messageStr.getBytes("UTF-8"));
+                deflaterStream.write(messageStr.getBytes(StandardCharsets.UTF_8));
                 deflaterStream.finish();
 
                 return Base64Support.encode(bytesOut.toByteArray(), Base64Support.UNCHUNKED);
@@ -200,11 +209,9 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Helper method that marshalls the given message.
-     * 
+     *
      * @param message message the marshall and serialize
-     * 
      * @return marshalled message
-     * 
      * @throws MessageEncodingException thrown if the give message can not be
      *                                  marshalled into its DOM representation
      */
@@ -221,13 +228,11 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Builds the URL to redirect the client to.
-     * 
+     *
      * @param messageContext current message context
      * @param endpoint       endpoint URL to send encoded message to
      * @param message        Deflated and Base64 encoded message
-     * 
      * @return URL to redirect client to
-     * 
      * @throws MessageEncodingException thrown if the SAML message is neither a
      *                                  RequestAbstractType or Response
      */
@@ -286,7 +291,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
             // order.
             if (!originalParams.isEmpty()) {
                 for (final Pair<String, String> param : Lists.reverse(originalParams)) {
-                    queryParams.add(0, param);
+                    queryParams.addFirst(param);
                 }
             }
 
@@ -300,7 +305,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Remove disallowed query params from the supplied list.
-     * 
+     *
      * @param queryParams the list of query params on which to operate
      */
     protected void removeDisallowedQueryParams(final @Nonnull List<Pair<String, String>> queryParams) {
@@ -316,11 +321,9 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Gets the signature algorithm URI to use.
-     * 
+     *
      * @param signingParameters the signing parameters to use
-     * 
      * @return signature algorithm to use with the associated signing credential
-     * 
      * @throws MessageEncodingException thrown if the algorithm URI is not supplied
      *                                  explicitly and
      *                                  could not be derived from the supplied
@@ -338,33 +341,29 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
 
     /**
      * Generates the signature over the query string.
-     * 
+     *
      * @param signingCredential credential that will be used to sign query string
      * @param algorithmURI      algorithm URI of the signing credential
      * @param queryString       query string to be signed
-     * 
      * @return base64 encoded signature of query string
-     * 
      * @throws MessageEncodingException there is an error computing the signature
      */
     protected String generateSignature(final Credential signingCredential, final String algorithmURI,
-            final String queryString)
+                                       final String queryString)
             throws MessageEncodingException {
 
-        log.debug(String.format("Generating signature with key type '%s', algorithm URI '%s' over query string '%s'",
-                CredentialSupport.extractSigningKey(signingCredential).getAlgorithm(), algorithmURI, queryString));
+        log.debug("Generating signature with key type '{}', algorithm URI '{}' over query string '{}'",
+                CredentialSupport.extractSigningKey(signingCredential).getAlgorithm(), algorithmURI, queryString);
 
         String b64Signature = null;
         try {
             final byte[] rawSignature = XMLSigningUtil.signWithURI(signingCredential, algorithmURI,
-                    queryString.getBytes("UTF-8"));
+                    queryString.getBytes(StandardCharsets.UTF_8));
             b64Signature = Base64Support.encode(rawSignature, Base64Support.UNCHUNKED);
             log.debug("Generated digital signature value (base64-encoded) {}", b64Signature);
         } catch (final SecurityException e) {
             log.error("Error during URL signing process: {}", e.getMessage());
             throw new MessageEncodingException("Unable to sign URL query string", e);
-        } catch (final UnsupportedEncodingException e) {
-            // UTF-8 encoding is required to be supported by all JVMs
         } catch (final EncodingException e) {
             log.error("Error during URL signing process: {}", e.getMessage());
             throw new MessageEncodingException("Unable to base64 encode signature of URL query string", e);
@@ -378,7 +377,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
      * {@link Deflater} instance and
      * closes it when the stream is closed.
      */
-    private class NoWrapAutoEndDeflaterOutputStream extends DeflaterOutputStream {
+    private static class NoWrapAutoEndDeflaterOutputStream extends DeflaterOutputStream {
 
         /**
          * Creates a new output stream with a default no-wrap compressor and buffer
@@ -392,7 +391,9 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
             super(os, new Deflater(level, true));
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void close() throws IOException {
             if (def != null) {
                 def.end();
@@ -403,7 +404,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
     }
 
     @Override
-    public void prepareContext() throws MessageEncodingException {
+    public void prepareContext() {
     }
 
     @Override

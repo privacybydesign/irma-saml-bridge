@@ -2,6 +2,9 @@ package nl.sidn.irma.saml_bridge.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.resolver.ResolverException;
@@ -35,9 +38,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -141,9 +141,9 @@ public class RequestController {
         } catch (MessageDecodingException e) {
             log.warn("action=\"request-flow\", warning=\"Failed to decode SAML request\"", e);
             return showError(RequestError.builder()
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Failed to decode SAML request")
-                    .build(),
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message("Failed to decode SAML request")
+                            .build(),
                     request,
                     response,
                     model);
@@ -157,9 +157,9 @@ public class RequestController {
         if (authnRequest == null) {
             log.warn("action=\"request-flow\", warning=\"SAML request is not an Authnrequest\"");
             return showError(RequestError.builder()
-                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                    .message("SAML request is not an Authnrequest")
-                    .build(),
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message("SAML request is not an Authnrequest")
+                            .build(),
                     request,
                     response,
                     model);
@@ -172,9 +172,9 @@ public class RequestController {
         } catch (MessageHandlerException | ComponentInitializationException | ResolverException e) {
             log.warn("action=\"request-flow\", warning=\"SAML request signature malformed\"", e);
             return showError(RequestError.builder()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value())
-                    .message("SAML request signature malformed")
-                    .build(),
+                            .statusCode(HttpStatus.UNAUTHORIZED.value())
+                            .message("SAML request signature malformed")
+                            .build(),
                     request,
                     response,
                     model);
@@ -183,9 +183,9 @@ public class RequestController {
         if (authnRequest.getIssueInstant().isBefore(Instant.now().minusSeconds(config.getRequestTtlInSec()))) {
             log.warn("action=\"request-flow\", warning=\"SAML request is too old, session timeout\"");
             return showError(RequestError.builder()
-                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                    .message("SAML request is too old, session timeout")
-                    .build(),
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message("SAML request is too old, session timeout")
+                            .build(),
                     request,
                     response,
                     model);
@@ -236,9 +236,9 @@ public class RequestController {
                             log.warn(
                                     "action=\"request-flow\", warning=\"Cannot request the same irma attribute identifier multiple times\"");
                             return showError(RequestError.builder()
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .message("Cannot request the same irma attribute identifier multiple times")
-                                    .build(),
+                                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                                            .message("Cannot request the same irma attribute identifier multiple times")
+                                            .build(),
                                     request,
                                     response,
                                     model);
@@ -248,10 +248,10 @@ public class RequestController {
                         log.warn(
                                 "action=\"requestservlet.doget\", warning=\"Requesting individual irma attribute identifiers is only supported using the RequestedAttributes extension\"");
                         return showError(RequestError.builder()
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .message(
-                                        "Requesting individual irma attribute identifiers is only supported using the RequestedAttributes extension")
-                                .build(),
+                                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                                        .message(
+                                                "Requesting individual irma attribute identifiers is only supported using the RequestedAttributes extension")
+                                        .build(),
                                 request,
                                 response,
                                 model);
@@ -261,9 +261,9 @@ public class RequestController {
                         if (packedCondiscon != null) {
                             log.warn("action=\"request-flow\", warning=\"Cannot request for multiple condiscons\"");
                             return showError(RequestError.builder()
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .message("Cannot request for multiple condiscons")
-                                    .build(),
+                                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                                            .message("Cannot request for multiple condiscons")
+                                            .build(),
                                     request,
                                     response,
                                     model);
@@ -278,9 +278,9 @@ public class RequestController {
                 } else {
                     log.warn("action=\"request-flow\", warning=\"Requested XML attribute name is invalid\"");
                     return showError(RequestError.builder()
-                            .statusCode(HttpStatus.BAD_REQUEST.value())
-                            .message("Requested XML attribute name is invalid")
-                            .build(),
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .message("Requested XML attribute name is invalid")
+                                    .build(),
                             request,
                             response,
                             model);
@@ -294,9 +294,9 @@ public class RequestController {
                 log.warn(
                         "action=\"request-flow\", warning=\"Cannot mix the condiscon and the requested attributes extension\"");
                 return showError(RequestError.builder()
-                        .statusCode(HttpStatus.BAD_REQUEST.value())
-                        .message("Cannot mix the condiscon and the requested attributes extension")
-                        .build(),
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .message("Cannot mix the condiscon and the requested attributes extension")
+                                .build(),
                         request,
                         response,
                         model);
@@ -304,7 +304,7 @@ public class RequestController {
             condiscon = new String[simpleAttributes.size()][][];
             int i = 0;
             for (Set<String> attributes : simpleAttributes.values()) {
-                condiscon[i++] = new String[][] { attributes.toArray(new String[0]) };
+                condiscon[i++] = new String[][]{attributes.toArray(new String[0])};
             }
         } else if (StringUtils.isNotEmpty(packedCondiscon)) {
             try {
@@ -312,9 +312,9 @@ public class RequestController {
             } catch (JsonProcessingException e) {
                 log.warn("action=\"request-flow\", warning=\"Requested condiscon could not be parsed\"", e);
                 return showError(RequestError.builder()
-                        .statusCode(HttpStatus.BAD_REQUEST.value())
-                        .message("Requested condiscon could not be parsed")
-                        .build(),
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .message("Requested condiscon could not be parsed")
+                                .build(),
                         request,
                         response,
                         model);
@@ -352,9 +352,9 @@ public class RequestController {
         if (StringUtils.isEmpty(returnUrl)) {
             log.warn("action=\"request-flow\", warning=\"Return URL is empty (AssertionConsumerServiceURL in SAML)\"");
             return showError(RequestError.builder()
-                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                    .message("Return URL is empty (AssertionConsumerServiceURL in SAML)")
-                    .build(),
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .message("Return URL is empty (AssertionConsumerServiceURL in SAML)")
+                            .build(),
                     request,
                     response,
                     model);
@@ -415,9 +415,9 @@ public class RequestController {
         } catch (BridgeException e) {
             // looging already done in the irmaService
             return showError(RequestError.builder()
-                    .statusCode(e.getHttpStatusCode())
-                    .message(e.getMessage())
-                    .build(),
+                            .statusCode(e.getHttpStatusCode())
+                            .message(e.getMessage())
+                            .build(),
                     request,
                     response,
                     model);

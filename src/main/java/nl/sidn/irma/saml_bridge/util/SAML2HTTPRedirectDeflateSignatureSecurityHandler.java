@@ -3,7 +3,7 @@
  * API instead of the javax servlet API.
  *
  * The original license is included below.
- * 
+ *
  * Licensed to the University Corporation for Advanced Internet Development,
  * Inc. (UCAID) under one or more contributor license agreements.  See the
  * NOTICE file distributed with this work for additional information regarding
@@ -22,20 +22,17 @@
 
 package nl.sidn.irma.saml_bridge.util;
 
-import java.io.UnsupportedEncodingException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import com.google.common.base.Strings;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.net.URISupport;
-
 import org.opensaml.messaging.context.MessageContext;
 import org.opensaml.messaging.handler.MessageHandlerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Message handler which evaluates simple "blob" signatures according to the
@@ -43,17 +40,23 @@ import com.google.common.base.Strings;
  */
 public class SAML2HTTPRedirectDeflateSignatureSecurityHandler extends BaseSAMLSimpleSignatureSecurityHandler {
 
-    /** Logger. */
+    /**
+     * Logger.
+     */
     @Nonnull
     private final Logger log = LoggerFactory.getLogger(SAML2HTTPRedirectDeflateSignatureSecurityHandler.class);
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected boolean ruleHandles(@Nonnull final MessageContext messgaeContext) throws MessageHandlerException {
+    protected boolean ruleHandles(@Nonnull final MessageContext messgaeContext) {
         return "GET".equals(getHttpServletRequest().getMethod());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Nullable
     protected byte[] getSignedContent() throws MessageHandlerException {
@@ -73,18 +76,13 @@ public class SAML2HTTPRedirectDeflateSignatureSecurityHandler extends BaseSAMLSi
         }
         log.debug("Constructed signed content string for HTTP-Redirect DEFLATE {}", constructed);
 
-        try {
-            return constructed.getBytes("UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-            log.error("UTF-8 encoding is not supported, this VM is not Java compliant");
-            throw new MessageHandlerException("Unable to process message, UTF-8 encoding is not supported");
-        }
+        return constructed.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
      * Extract the raw request parameters and build a string representation of the
      * content that was signed.
-     * 
+     *
      * @param queryString the raw HTTP query string from the request
      * @return a string representation of the signed content
      * @throws MessageHandlerException thrown if there is an error during request
@@ -114,23 +112,23 @@ public class SAML2HTTPRedirectDeflateSignatureSecurityHandler extends BaseSAMLSi
     /**
      * Find the raw query string parameter indicated and append it to the string
      * builder.
-     * 
+     * <p>
      * The appended value will be in the form 'paramName=paramValue' (minus the
      * quotes).
-     * 
+     *
      * @param builder     string builder to which to append the parameter
      * @param queryString the URL query string containing parameters
      * @param paramName   the name of the parameter to append
      * @return true if parameter was found, false otherwise
      */
     private boolean appendParameter(@Nonnull final StringBuilder builder, @Nullable final String queryString,
-            @Nullable final String paramName) {
+                                    @Nullable final String paramName) {
         final String rawParam = URISupport.getRawQueryStringParameter(queryString, paramName);
         if (rawParam == null) {
             return false;
         }
 
-        if (builder.length() > 0) {
+        if (!builder.isEmpty()) {
             builder.append('&');
         }
 
