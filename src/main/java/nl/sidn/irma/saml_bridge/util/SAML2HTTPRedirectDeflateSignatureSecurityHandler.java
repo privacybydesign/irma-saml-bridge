@@ -25,7 +25,6 @@ package nl.sidn.irma.saml_bridge.util;
 import com.google.common.base.Strings;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.net.URISupport;
-import org.opensaml.messaging.context.MessageContext;
 import org.opensaml.messaging.handler.MessageHandlerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,7 @@ public class SAML2HTTPRedirectDeflateSignatureSecurityHandler extends BaseSAMLSi
      * {@inheritDoc}
      */
     @Override
-    protected boolean ruleHandles(@Nonnull final MessageContext messgaeContext) {
+    protected boolean ruleHandles() {
         return "GET".equals(getHttpServletRequest().getMethod());
     }
 

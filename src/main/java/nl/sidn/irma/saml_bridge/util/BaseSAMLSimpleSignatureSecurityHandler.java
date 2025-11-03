@@ -188,7 +188,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
     protected void doInvoke(@Nonnull final MessageContext messageContext) throws MessageHandlerException {
         log.debug("{} Evaluating simple signature rule of type: {}", getLogPrefix(), getClass().getName());
 
-        if (!ruleHandles(messageContext)) {
+        if (!ruleHandles()) {
             log.debug("{} Handler can not handle this request, skipping", getLogPrefix());
             return;
         }
@@ -233,7 +233,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
                             @Nonnull @NotEmpty final String algorithmURI, @Nonnull final MessageContext messageContext)
             throws MessageHandlerException {
 
-        final List<Credential> candidateCredentials = getRequestCredentials(messageContext);
+        final List<Credential> candidateCredentials = getRequestCredentials();
 
         final String contextEntityID = peerContext.getEntityId();
 
@@ -258,7 +258,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
             throw new MessageHandlerException("Validation of request simple signature failed for context issuer");
         }
 
-        final String derivedEntityID = deriveSignerEntityID(messageContext);
+        final String derivedEntityID = deriveSignerEntityID();
         if (derivedEntityID != null) {
             log.debug("{} Attempting to validate SAML protocol message simple signature using derived entityID: {}",
                     getLogPrefix(), derivedEntityID);
@@ -345,16 +345,12 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * Some bindings allow validataion keys for the simple signature to be supplied,
      * and others do not.
      *
-     * @param messageContext the SAML message context being processed
      * @return a list of candidate validation credentials in the request, or null if
      * none were present
-     * @throws MessageHandlerException thrown if there is an error during request
-     *                                 processing
      */
     @Nonnull
     @NonnullElements
-    protected List<Credential> getRequestCredentials(
-            @Nonnull final MessageContext messageContext) throws MessageHandlerException {
+    protected List<Credential> getRequestCredentials() {
         // This will be specific to the binding and message types, so no default.
         return Collections.emptyList();
     }
@@ -390,12 +386,9 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * Defaults to the HTTP request parameter named <code>SigAlg</code>.
      *
      * @return the signature algorithm URI value
-     * @throws MessageHandlerException thrown if there is an error during request
-     *                                 processing
      */
     @Nullable
-    protected String getSignatureAlgorithm()
-            throws MessageHandlerException {
+    protected String getSignatureAlgorithm() {
         return getHttpServletRequest().getParameter("SigAlg");
     }
 
@@ -405,14 +398,10 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * This is implementation-specific and there is no default. This is primarily an
      * extension point for subclasses.
      *
-     * @param messageContext the SAML message context being processed
      * @return the signer's derived entity ID
-     * @throws MessageHandlerException thrown if there is an error during request
-     *                                 processing
      */
     @Nullable
-    protected String deriveSignerEntityID(@Nonnull final MessageContext messageContext)
-            throws MessageHandlerException {
+    protected String deriveSignerEntityID() {
         // No default
         return null;
     }
@@ -424,11 +413,10 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * @param messageContext the message context which is being evaluated
      * @return a newly constructly set of criteria suitable for the configured trust
      * engine
-     * @throws MessageHandlerException thrown if criteria set can not be constructed
      */
     @Nonnull
     protected CriteriaSet buildCriteriaSet(@Nullable final String entityID,
-                                           @Nonnull final MessageContext messageContext) throws MessageHandlerException {
+                                           @Nonnull final MessageContext messageContext) {
 
         final CriteriaSet criteriaSet = new CriteriaSet();
         if (!Strings.isNullOrEmpty(entityID)) {
@@ -467,13 +455,12 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * HTTP servlet request and/or message
      * context.
      *
-     * @param messageContext the SAML message context being processed
      * @return true if the rule should attempt to process the request, otherwise
      * false
      * @throws MessageHandlerException thrown if there is an error during request
      *                                 processing
      */
-    protected abstract boolean ruleHandles(@Nonnull final MessageContext messageContext)
+    protected abstract boolean ruleHandles()
             throws MessageHandlerException;
 
 }

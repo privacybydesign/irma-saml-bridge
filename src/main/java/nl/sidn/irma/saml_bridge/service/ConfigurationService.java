@@ -41,8 +41,7 @@ public class ConfigurationService {
         if (path == null) {
             path = DEFAULT_CONFIG_PATH;
         }
-        try {
-            FileReader fr = new FileReader(path);
+        try (FileReader fr = new FileReader(path)) {
             configuration = objectMapper.readValue(fr, Configuration.class);
             log.info("action=\"initialize\", Loaded configuration from path=\"{}\"", path);
 

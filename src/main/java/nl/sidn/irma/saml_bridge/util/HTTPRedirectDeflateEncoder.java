@@ -120,6 +120,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
      * {@inheritDoc}
      */
     @Nonnull
+    @Override
     public String getBindingURI() {
         return SAMLConstants.SAML2_REDIRECT_BINDING_URI;
     }
@@ -355,7 +356,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
         log.debug("Generating signature with key type '{}', algorithm URI '{}' over query string '{}'",
                 CredentialSupport.extractSigningKey(signingCredential).getAlgorithm(), algorithmURI, queryString);
 
-        String b64Signature = null;
+        String b64Signature;
         try {
             final byte[] rawSignature = XMLSigningUtil.signWithURI(signingCredential, algorithmURI,
                     queryString.getBytes(StandardCharsets.UTF_8));
@@ -394,6 +395,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void close() throws IOException {
             if (def != null) {
                 def.end();

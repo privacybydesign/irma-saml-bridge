@@ -1,8 +1,11 @@
 package nl.sidn.irma.saml_bridge.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import nl.sidn.irma.saml_bridge.exception.InvalidConfigurationException;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -60,6 +63,7 @@ public class Configuration {
     /**
      * Default condiscon when none is provided by SP.
      */
+    @Getter(AccessLevel.NONE)
     private String[][][] defaultCondiscon;
 
     /**
@@ -97,6 +101,10 @@ public class Configuration {
         return issuerName;
     }
 
+    public String[][][] getDefaultCondiscon() {
+        return Arrays.copyOf(defaultCondiscon, defaultCondiscon.length);
+    }
+
     /**
      * Checks whether the current configuration is valid.
      * In case it is invalid, an exception is thrown with details about the problem.
@@ -104,7 +112,7 @@ public class Configuration {
      * @throws InvalidConfigurationException The invalid configuration exception.
      */
     public void validate() throws InvalidConfigurationException {
-        if (this.getDefaultCondiscon() == null) {
+        if (this.getDefaultCondiscon() == null || this.getDefaultCondiscon().length == 0) {
             throw new InvalidConfigurationException("No defaultCondiscon is specified");
         }
     }

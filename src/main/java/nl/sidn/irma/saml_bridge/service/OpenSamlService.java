@@ -24,7 +24,6 @@ import org.opensaml.saml.saml2.core.impl.*;
 import org.opensaml.saml.saml2.metadata.*;
 import org.opensaml.saml.saml2.metadata.impl.*;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
-import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.x509.BasicX509Credential;
@@ -383,12 +382,12 @@ public class OpenSamlService {
     /**
      * Marshall a SAML assertion response and sign it.
      *
-     * @param response
+     * @param response The response to be marshalled and signed.
      * @return A XML text string containing the signed SAML assertion.
-     * @throws MarshallingException
-     * @throws TransformerException
-     * @throws SignatureException
-     * @throws CertificateEncodingException
+     * @throws MarshallingException         The marshalling exception is thrown when the SAML response cannot be marshalled.
+     * @throws TransformerException         The transformer exception is thrown when the SAML response cannot be transformed to a string.
+     * @throws SignatureException           The signature exception is thrown when the SAML response cannot be signed.
+     * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     public String marshallResponse(Response response)
             throws MarshallingException, TransformerException, SignatureException, CertificateEncodingException {
@@ -408,8 +407,7 @@ public class OpenSamlService {
      * Create a SAML metadata XML object for our Identity Provider.
      *
      * @return The SAML metadata XML object.
-     * @throws SecurityException
-     * @throws CertificateEncodingException
+     * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     public EntityDescriptor createIdPMetadata() throws CertificateEncodingException {
         XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
@@ -462,7 +460,7 @@ public class OpenSamlService {
      * Meant exclusively for testing.
      *
      * @return The SAML metadata XML object.
-     * @throws CertificateEncodingException
+     * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     public EntityDescriptor createSPMetadata() throws CertificateEncodingException {
         Configuration configuration = this.configurationService.getConfiguration();
@@ -544,10 +542,10 @@ public class OpenSamlService {
      * Marshall a SAML metadata object.
      * This object is not signed.
      *
-     * @param metadata
+     * @param metadata The metadata to be marshalled.
      * @return A XML string containing the SAML metadata object.
-     * @throws MarshallingException
-     * @throws TransformerException
+     * @throws MarshallingException The marshalling exception is thrown when the SAML metadata cannot be marshalled.
+     * @throws TransformerException The transformer exception is thrown when the SAML metadata cannot be transformed to a string.
      */
     public String marshallMetadata(EntityDescriptor metadata) throws MarshallingException, TransformerException {
         MarshallerFactory factory = XMLObjectProviderRegistrySupport.getMarshallerFactory();
@@ -559,9 +557,9 @@ public class OpenSamlService {
     /**
      * Marshall a XML object to a string.
      *
-     * @param element
+     * @param element The XML element to be marshalled.
      * @return A string containing the XML object.
-     * @throws TransformerException
+     * @throws TransformerException The transformer exception is thrown when the XML object cannot be transformed to a string.
      */
     private String marshallToString(Element element) throws TransformerException {
         DOMSource domSource = new DOMSource(element);
@@ -583,10 +581,10 @@ public class OpenSamlService {
      * Given a string with a SAML assertion, verify that it is properly formed and
      * is correctly signed.
      *
-     * @param response
+     * @param response The SAML assertion response as a string.
      * @throws SignatureException     Thrown when the signature is incorrect.
-     * @throws UnmarshallingException
-     * @throws XMLParserException
+     * @throws UnmarshallingException The unmarshalling exception is thrown when the SAML response cannot be unmarshalled.
+     * @throws XMLParserException     The XML parser exception is thrown when the SAML response cannot be parsed.
      */
     public void verifyAssertionResponse(String response)
             throws SignatureException, XMLParserException, UnmarshallingException {

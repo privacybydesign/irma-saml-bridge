@@ -112,6 +112,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
      */
     @Nonnull
     @NotEmpty
+    @Override
     public String getBindingURI() {
         return SAMLConstants.SAML2_REDIRECT_BINDING_URI;
     }
@@ -160,6 +161,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void decode() throws MessageDecodingException {
         final MessageContext msgContext = new MessageContext();
 
@@ -269,6 +271,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
         /**
          * {@inheritDoc}
          */
+        @Override
         public void close() throws IOException {
             if (inf != null) {
                 inf.end();
