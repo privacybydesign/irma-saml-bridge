@@ -7,12 +7,10 @@ import nl.sidn.irma.saml_bridge.service.ConfigurationService;
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import java.security.PublicKey;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.Map;
-
-import static io.jsonwebtoken.Jwts.parser;
 
 @Service
 public class JwtUtil {
@@ -28,11 +26,11 @@ public class JwtUtil {
         this.keyService = keyService;
     }
 
-    public Jws<Claims> getClaims(Key key, String claims) {
-        return parser()
-                .setSigningKey(key)
+    public Jws<Claims> getClaims(PublicKey key, String jwt) {
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseSignedClaims(claims);
+                .parseSignedClaims(jwt);
     }
 
     public String createJwtToken(String subject, String claimName, Object claim) {

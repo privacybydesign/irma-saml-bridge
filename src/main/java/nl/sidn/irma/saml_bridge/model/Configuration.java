@@ -36,6 +36,11 @@ public class Configuration {
     private String jwtPrivateKeyPath;
 
     /**
+     * Path to public key which we use to verify JWT messages
+     */
+    private String jwtPublicKeyPath;
+
+    /**
      * Path to private key used to simulate the IRMA go instance, might be NULL (i.e. in production)
      */
     private String testIrmaPrivateKeyPath;
@@ -102,7 +107,7 @@ public class Configuration {
     }
 
     public String[][][] getDefaultCondiscon() {
-        return Arrays.copyOf(defaultCondiscon, defaultCondiscon.length);
+        return defaultCondiscon == null ? null : Arrays.copyOf(defaultCondiscon, defaultCondiscon.length);
     }
 
     /**
@@ -112,8 +117,17 @@ public class Configuration {
      * @throws InvalidConfigurationException The invalid configuration exception.
      */
     public void validate() throws InvalidConfigurationException {
-        if (this.getDefaultCondiscon() == null || this.getDefaultCondiscon().length == 0) {
+        if (this.defaultCondiscon == null || this.defaultCondiscon.length == 0) {
             throw new InvalidConfigurationException("No defaultCondiscon is specified");
+        }
+        if (this.jwtPrivateKeyPath == null) {
+            throw new InvalidConfigurationException("jwtPrivateKeyPath must be specified");
+        }
+        //
+        if (this.jwtPublicKeyPath == null) {
+            throw new InvalidConfigurationException(
+                    "JwtPublicKeyPath must be specified to verify JWTs"
+            );
         }
     }
 

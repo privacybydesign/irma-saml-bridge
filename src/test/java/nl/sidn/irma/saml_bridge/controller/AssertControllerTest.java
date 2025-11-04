@@ -20,7 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.security.Key;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
@@ -83,7 +83,7 @@ class AssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
@@ -118,7 +118,7 @@ class AssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
@@ -151,7 +151,7 @@ class AssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
@@ -181,7 +181,7 @@ class AssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
@@ -211,7 +211,7 @@ class AssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
 
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -242,7 +242,7 @@ class AssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenThrow(new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)

@@ -32,12 +32,7 @@ public class AssertController {
 
     private final RedirectInstructionService redirectInstructionService;
 
-    public AssertController(
-            ObjectMapper objectMapper,
-            KeyService keyService,
-            JwtUtil jwtUtil,
-            RedirectInstructionService redirectInstructionService
-    ) {
+    public AssertController(ObjectMapper objectMapper, KeyService keyService, JwtUtil jwtUtil, RedirectInstructionService redirectInstructionService) {
         this.objectMapper = objectMapper;
         this.keyService = keyService;
         this.jwtUtil = jwtUtil;
@@ -45,11 +40,7 @@ public class AssertController {
     }
 
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void report(
-            HttpServletRequest request,
-            HttpServletResponse response
-
-    ) throws IOException {
+    public void report(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // We receive a JSON POST body, and parse it.
         AssertRequest arequest = objectMapper.readValue(request.getReader(), AssertRequest.class);
 
@@ -57,7 +48,7 @@ public class AssertController {
         Jws<Claims> token = jwtUtil.getClaims(keyService.getIrmaPublicKey(), arequest.getToken());
 
         // Decode our pre-prepared set of assertion parameters.
-        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPrivateKey(), arequest.getParameters());
+        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPublicKey(), arequest.getParameters());
 
         // Unpack the IRMA response.
         Disclosure disclosure;

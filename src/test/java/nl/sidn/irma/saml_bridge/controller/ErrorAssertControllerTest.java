@@ -5,7 +5,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
-import nl.sidn.irma.saml_bridge.model.*;
+import nl.sidn.irma.saml_bridge.model.AssertParameters;
+import nl.sidn.irma.saml_bridge.model.AssertRequest;
+import nl.sidn.irma.saml_bridge.model.RedirectInstruction;
+import nl.sidn.irma.saml_bridge.model.ResultStatus;
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import nl.sidn.irma.saml_bridge.service.RedirectInstructionService;
 import nl.sidn.irma.saml_bridge.util.JwtUtil;
@@ -20,7 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.security.Key;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Map;
 import java.util.TreeMap;
@@ -72,7 +75,7 @@ class ErrorAssertControllerTest {
 
         @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
     }
 
     @Test
