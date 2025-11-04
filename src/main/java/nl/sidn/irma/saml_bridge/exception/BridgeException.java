@@ -1,6 +1,5 @@
 package nl.sidn.irma.saml_bridge.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatusCode;
 
 /**
@@ -8,17 +7,15 @@ import org.springframework.http.HttpStatusCode;
  * communicated to the end user.
  */
 public class BridgeException extends Exception {
-	private final HttpStatusCode httpStatusCode;
-	@Getter
-    private String message;
+    private final HttpStatusCode httpStatusCode;
 
-	public BridgeException(HttpStatusCode httpStatusCode, String message) {
-		this.httpStatusCode = httpStatusCode;
-		this.message = message;
-	}
+    public BridgeException(HttpStatusCode httpStatusCode, String message) {
+        super(message);
+        this.httpStatusCode = httpStatusCode;
+    }
 
-	public int getHttpStatusCode() {
-		return httpStatusCode.value();
-	}
+    public int getHttpStatusCode() {
+        return httpStatusCode.value();
+    }
 
 }
