@@ -2,6 +2,7 @@ package nl.sidn.irma.saml_bridge.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ClaimsBuilder;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
@@ -12,6 +13,7 @@ import nl.sidn.irma.saml_bridge.model.ResultStatus;
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import nl.sidn.irma.saml_bridge.service.RedirectInstructionService;
 import nl.sidn.irma.saml_bridge.util.JwtUtil;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.security.PublicKey;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -61,30 +63,36 @@ class ErrorAssertControllerTest {
 
     @BeforeEach
     void init() {
-        when(keyService.getJwtPrivateKey()).thenReturn(mock(RSAPrivateKey.class));
-        Map<String, Object> params = new TreeMap<>();
+        final JSONObject requestErrorJsonObject = new JSONObject();
+        requestErrorJsonObject.put("message", "message");
+        requestErrorJsonObject.put("statusCode", 400);
+
+        when(keyService.getJwtPublicKey()).thenReturn(mock(RSAPublicKey.class));
+        final Map<String, Object> params = new TreeMap<>();
         params.put("sp_name", "sp_name");
         params.put("request_id", "request_id");
         params.put("service_url", "service_url");
         params.put("issuer", "issuer");
         params.put("condiscon", "condiscon");
         params.put("relay_state", "relay_state");
+        params.put("request_error", requestErrorJsonObject.toString());
 
-        Claims claims = Jwts.claims().build();
-        claims.put("aparams", params);
+        final ClaimsBuilder claimsBuilder = Jwts.claims();
+        claimsBuilder.add("aparams", params);
+        final Claims claims = claimsBuilder.build();
 
-        @SuppressWarnings("unchecked") Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
+        @SuppressWarnings("unchecked") final Jws<Claims> claimsJws = (Jws<Claims>) mock(Jws.class);
         when(claimsJws.getPayload()).thenReturn(claims);
         when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
     }
 
     @Test
     void errorTest() throws Exception {
-        AssertRequest assertRequestMock = assertRequest();
-        RedirectInstruction redirectInstructionMock = redirectInstruction();
+        final AssertRequest assertRequestMock = assertRequest();
+        final RedirectInstruction redirectInstructionMock = redirectInstruction();
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
-        MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
+        final MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
                 )
@@ -97,11 +105,11 @@ class ErrorAssertControllerTest {
 
     @Test
     void errorAbortTest() throws Exception {
-        AssertRequest assertRequestMock = assertRequest();
-        RedirectInstruction redirectInstructionMock = redirectInstruction();
+        final AssertRequest assertRequestMock = assertRequest();
+        final RedirectInstruction redirectInstructionMock = redirectInstruction();
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
-        MvcResult mvcResult = mockMvc.perform(post(BASE_URL + "/abort")
+        final MvcResult mvcResult = mockMvc.perform(post(BASE_URL + "/abort")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
                 )
@@ -114,10 +122,10 @@ class ErrorAssertControllerTest {
 
     @Test
     void errorTestWithBridgeException() throws Exception {
-        AssertRequest assertRequestMock = assertRequest();
+        final AssertRequest assertRequestMock = assertRequest();
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(ResultStatus.class))).thenThrow(new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
-        MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
+        final MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
                 )

@@ -78,9 +78,9 @@ public class OpenSamlService {
     private final ParserPool parserPool;
 
     public OpenSamlService(
-            ConfigurationService configurationService,
-            KeyService keyService,
-            ParserPool parserPool) throws InitializationException {
+            final ConfigurationService configurationService,
+            final KeyService keyService,
+            final ParserPool parserPool) throws InitializationException {
         this.configurationService = configurationService;
         this.keyService = keyService;
         this.parserPool = parserPool;
@@ -106,27 +106,24 @@ public class OpenSamlService {
      * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     private KeyInfo createKeyInfoForCertificate() throws CertificateEncodingException {
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        XMLObjectBuilder<KeyInfoImpl> keyInfoBuilder = (XMLObjectBuilder<KeyInfoImpl>) factory
+        @SuppressWarnings("unchecked") final XMLObjectBuilder<KeyInfoImpl> keyInfoBuilder = (XMLObjectBuilder<KeyInfoImpl>) factory
                 .getBuilder(KeyInfo.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        XMLObjectBuilder<X509DataImpl> x509Builder = (XMLObjectBuilder<X509DataImpl>) factory
+        @SuppressWarnings("unchecked") final XMLObjectBuilder<X509DataImpl> x509Builder = (XMLObjectBuilder<X509DataImpl>) factory
                 .getBuilder(X509Data.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        XMLObjectBuilder<X509CertificateImpl> certBuilder = (XMLObjectBuilder<X509CertificateImpl>) factory
+        @SuppressWarnings("unchecked") final XMLObjectBuilder<X509CertificateImpl> certBuilder = (XMLObjectBuilder<X509CertificateImpl>) factory
                 .getBuilder(X509Certificate.DEFAULT_ELEMENT_NAME);
 
-        String value = new String(Base64.getEncoder().encode(this.keyService.getSamlCertificate().getEncoded()));
+        final String value = new String(Base64.getEncoder().encode(this.keyService.getSamlCertificate().getEncoded()));
         assert certBuilder != null;
-        X509Certificate cert = certBuilder.buildObject(X509Certificate.DEFAULT_ELEMENT_NAME);
+        final X509Certificate cert = certBuilder.buildObject(X509Certificate.DEFAULT_ELEMENT_NAME);
         cert.setValue(value);
 
-        X509DataImpl x509 = x509Builder.buildObject(X509Data.DEFAULT_ELEMENT_NAME);
+        final X509DataImpl x509 = x509Builder.buildObject(X509Data.DEFAULT_ELEMENT_NAME);
         x509.getX509Certificates().add(cert);
 
-        KeyInfo keyInfo = keyInfoBuilder.buildObject(KeyInfo.DEFAULT_ELEMENT_NAME);
+        final KeyInfo keyInfo = keyInfoBuilder.buildObject(KeyInfo.DEFAULT_ELEMENT_NAME);
         keyInfo.getX509Datas().add(x509);
 
         return keyInfo;
@@ -141,16 +138,15 @@ public class OpenSamlService {
      * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     private Signature createSignature() throws CertificateEncodingException {
-        Credential credential = new BasicX509Credential(
+        final Credential credential = new BasicX509Credential(
                 this.keyService.getSamlCertificate(),
                 this.keyService.getSamlPrivateKey());
 
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        XMLObjectBuilder<SignatureImpl> builder = (XMLObjectBuilder<SignatureImpl>) factory
+        @SuppressWarnings("unchecked") final XMLObjectBuilder<SignatureImpl> builder = (XMLObjectBuilder<SignatureImpl>) factory
                 .getBuilder(Signature.DEFAULT_ELEMENT_NAME);
-        Signature signature = builder.buildObject(Signature.DEFAULT_ELEMENT_NAME);
+        final Signature signature = builder.buildObject(Signature.DEFAULT_ELEMENT_NAME);
 
         signature.setSigningCredential(credential);
         signature.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256);
@@ -164,13 +160,12 @@ public class OpenSamlService {
      * Construct a typical Issuer XML object for our Identity Provider string.
      */
     private Issuer createIssuer() {
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<IssuerImpl> issuerBuilder = (SAMLObjectBuilder<IssuerImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<IssuerImpl> issuerBuilder = (SAMLObjectBuilder<IssuerImpl>) factory
                 .getBuilder(Issuer.DEFAULT_ELEMENT_NAME);
 
-        IssuerImpl issuer = issuerBuilder.buildObject();
+        final IssuerImpl issuer = issuerBuilder.buildObject();
         issuer.setValue(this.configurationService.getConfiguration().getIssuerName());
 
         return issuer;
@@ -187,126 +182,108 @@ public class OpenSamlService {
      * @param resultStatus     The status of the result.
      * @return The SAML assertion response XML object.
      */
-    public Response createAssertionResponse(AssertParameters assertParameters, Disclosure disclosure,
+    public Response createAssertionResponse(final AssertParameters assertParameters, final Disclosure disclosure,
                                             final ResultStatus resultStatus) {
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AuthnStatementImpl> authnStatementBuilder = (SAMLObjectBuilder<AuthnStatementImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AuthnStatementImpl> authnStatementBuilder = (SAMLObjectBuilder<AuthnStatementImpl>) factory
                 .getBuilder(AuthnStatement.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AttributeStatementImpl> attributeStatementBuilder = (SAMLObjectBuilder<AttributeStatementImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AttributeStatementImpl> attributeStatementBuilder = (SAMLObjectBuilder<AttributeStatementImpl>) factory
                 .getBuilder(AttributeStatement.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AttributeImpl> attributeBuilder = (SAMLObjectBuilder<AttributeImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AttributeImpl> attributeBuilder = (SAMLObjectBuilder<AttributeImpl>) factory
                 .getBuilder(Attribute.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        XMLObjectBuilder<XSString> xsStringBuilder = (XMLObjectBuilder<XSString>) factory
+        @SuppressWarnings("unchecked") final XMLObjectBuilder<XSString> xsStringBuilder = (XMLObjectBuilder<XSString>) factory
                 .getBuilder(XSString.TYPE_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AuthnContextImpl> authnContextBuilder = (SAMLObjectBuilder<AuthnContextImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AuthnContextImpl> authnContextBuilder = (SAMLObjectBuilder<AuthnContextImpl>) factory
                 .getBuilder(AuthnContext.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AuthnContextClassRefImpl> authnContextClassRefBuilder = (SAMLObjectBuilder<AuthnContextClassRefImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AuthnContextClassRefImpl> authnContextClassRefBuilder = (SAMLObjectBuilder<AuthnContextClassRefImpl>) factory
                 .getBuilder(AuthnContextClassRef.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<SubjectImpl> subjectBuilder = (SAMLObjectBuilder<SubjectImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<SubjectImpl> subjectBuilder = (SAMLObjectBuilder<SubjectImpl>) factory
                 .getBuilder(Subject.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<SubjectConfirmationImpl> subjectConfirmationBuilder = (SAMLObjectBuilder<SubjectConfirmationImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<SubjectConfirmationImpl> subjectConfirmationBuilder = (SAMLObjectBuilder<SubjectConfirmationImpl>) factory
                 .getBuilder(SubjectConfirmation.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<SubjectConfirmationDataImpl> subjectConfirmationDataBuilder = (SAMLObjectBuilder<SubjectConfirmationDataImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<SubjectConfirmationDataImpl> subjectConfirmationDataBuilder = (SAMLObjectBuilder<SubjectConfirmationDataImpl>) factory
                 .getBuilder(SubjectConfirmationData.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AssertionImpl> assertionBuilder = (SAMLObjectBuilder<AssertionImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AssertionImpl> assertionBuilder = (SAMLObjectBuilder<AssertionImpl>) factory
                 .getBuilder(Assertion.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<StatusImpl> statusBuilder = (SAMLObjectBuilder<StatusImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<StatusImpl> statusBuilder = (SAMLObjectBuilder<StatusImpl>) factory
                 .getBuilder(Status.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<StatusCodeImpl> statusCodeBuilder = (SAMLObjectBuilder<StatusCodeImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<StatusCodeImpl> statusCodeBuilder = (SAMLObjectBuilder<StatusCodeImpl>) factory
                 .getBuilder(StatusCode.DEFAULT_ELEMENT_NAME);
 
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<StatusMessageImpl> statusMessageBuilder = (SAMLObjectBuilder<StatusMessageImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<StatusMessageImpl> statusMessageBuilder = (SAMLObjectBuilder<StatusMessageImpl>) factory
                 .getBuilder(StatusMessage.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<ResponseImpl> responseBuilder = (SAMLObjectBuilder<ResponseImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<ResponseImpl> responseBuilder = (SAMLObjectBuilder<ResponseImpl>) factory
                 .getBuilder(Response.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<ConditionsImpl> conditionsBuilder = (SAMLObjectBuilder<ConditionsImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<ConditionsImpl> conditionsBuilder = (SAMLObjectBuilder<ConditionsImpl>) factory
                 .getBuilder(Conditions.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AudienceRestrictionImpl> audienceRestrictionBuilder = (SAMLObjectBuilder<AudienceRestrictionImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AudienceRestrictionImpl> audienceRestrictionBuilder = (SAMLObjectBuilder<AudienceRestrictionImpl>) factory
                 .getBuilder(AudienceRestriction.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AudienceImpl> audienceBuilder = (SAMLObjectBuilder<AudienceImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AudienceImpl> audienceBuilder = (SAMLObjectBuilder<AudienceImpl>) factory
                 .getBuilder(Audience.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<NameIDImpl> nameIDBuilder = (SAMLObjectBuilder<NameIDImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<NameIDImpl> nameIDBuilder = (SAMLObjectBuilder<NameIDImpl>) factory
                 .getBuilder(NameID.DEFAULT_ELEMENT_NAME);
 
-        Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
-        Instant until = now.plusSeconds(configurationService.getConfiguration().getResponseTtlInSec());
+        final Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+        final Instant until = now.plusSeconds(configurationService.getConfiguration().getResponseTtlInSec());
 
-        AuthnContextClassRef authnContextClassRef = authnContextClassRefBuilder.buildObject();
+        final AuthnContextClassRef authnContextClassRef = authnContextClassRefBuilder.buildObject();
         authnContextClassRef.setURI("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
 
-        AuthnContextImpl authnContext = authnContextBuilder.buildObject();
+        final AuthnContextImpl authnContext = authnContextBuilder.buildObject();
         authnContext.setAuthnContextClassRef(authnContextClassRef);
 
-        AudienceImpl audience = audienceBuilder.buildObject();
-        AudienceRestrictionImpl audienceRestriction = audienceRestrictionBuilder.buildObject();
+        final AudienceImpl audience = audienceBuilder.buildObject();
+        final AudienceRestrictionImpl audienceRestriction = audienceRestrictionBuilder.buildObject();
 
         audience.setURI(assertParameters.getIssuer());
         audienceRestriction.getAudiences().add(audience);
 
-        ConditionsImpl conditions = conditionsBuilder.buildObject();
+        final ConditionsImpl conditions = conditionsBuilder.buildObject();
         conditions.setNotBefore(now);
         conditions.setNotOnOrAfter(until);
         conditions.getAudienceRestrictions().add(audienceRestriction);
 
-        AuthnStatementImpl authnStatement = authnStatementBuilder.buildObject();
+        final AuthnStatementImpl authnStatement = authnStatementBuilder.buildObject();
         authnStatement.setAuthnInstant(now);
         authnStatement.setAuthnContext(authnContext);
 
-        SubjectImpl subject = subjectBuilder.buildObject();
-        StatusCodeImpl statusCode = statusCodeBuilder.buildObject();
+        final SubjectImpl subject = subjectBuilder.buildObject();
+        final StatusCodeImpl statusCode = statusCodeBuilder.buildObject();
 
         String id = null;
 
-        StatusImpl status = statusBuilder.buildObject();
+        final StatusImpl status = statusBuilder.buildObject();
 
-        ResponseImpl response = responseBuilder.buildObject();
+        final ResponseImpl response = responseBuilder.buildObject();
 
         if (resultStatus == ResultStatus.SUCCESS) {
             // Set nameID to first attribute, assuming we have such and attribute.
-            Optional<Map.Entry<String, String>> firstAttribute = disclosure.getAttributes()
+            final Optional<Map.Entry<String, String>> firstAttribute = disclosure.getAttributes()
                     .entrySet()
                     .stream()
                     .findFirst();
             if (firstAttribute.isPresent()) {
-                NameID nameID = nameIDBuilder.buildObject();
+                final NameID nameID = nameIDBuilder.buildObject();
                 nameID.setFormat(NameID.TRANSIENT);
                 nameID.setValue(firstAttribute.get().getValue());
                 subject.setNameID(nameID);
             }
 
-            AttributeStatementImpl attributeStatement = attributeStatementBuilder.buildObject();
-            for (Map.Entry<String, String> entry : disclosure.getAttributes().entrySet()) {
-                XSString attributeValue = xsStringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME,
+            final AttributeStatementImpl attributeStatement = attributeStatementBuilder.buildObject();
+            for (final Map.Entry<String, String> entry : disclosure.getAttributes().entrySet()) {
+                final XSString attributeValue = xsStringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME,
                         XSString.TYPE_NAME);
                 attributeValue.setValue(entry.getValue());
 
-                AttributeImpl attribute = attributeBuilder.buildObject();
+                final AttributeImpl attribute = attributeBuilder.buildObject();
                 attribute.setName(entry.getKey());
                 attribute.getAttributeValues().add(attributeValue);
 
                 attributeStatement.getAttributes().add(attribute);
             }
 
-            AssertionImpl assertion = assertionBuilder.buildObject();
+            final AssertionImpl assertion = assertionBuilder.buildObject();
             assertion.getAttributeStatements().add(attributeStatement);
 
             // Our assertion ID refers to the IRMA session.
@@ -327,7 +304,7 @@ public class OpenSamlService {
 
             statusCode.setValue(StatusCode.SUCCESS);
         } else if (resultStatus == ResultStatus.FAILED) {
-            StatusCodeImpl statusCodeError = statusCodeBuilder.buildObject();
+            final StatusCodeImpl statusCodeError = statusCodeBuilder.buildObject();
 
             statusCodeError.setValue(StatusCode.AUTHN_FAILED);
 
@@ -335,7 +312,7 @@ public class OpenSamlService {
             statusCode.setStatusCode(statusCodeError);
 
             // Add errormessage, see IRMA-1184
-            StatusMessageImpl statusMessage = statusMessageBuilder.buildObject();
+            final StatusMessageImpl statusMessage = statusMessageBuilder.buildObject();
             statusMessage.setValue((assertParameters.getRequestError().getMessage() != null)
                     ? assertParameters.getRequestError().getMessage()
                     : "");
@@ -344,12 +321,12 @@ public class OpenSamlService {
             id = generateId();
         }
 
-        SubjectConfirmationDataImpl subjectConfirmationData = subjectConfirmationDataBuilder.buildObject();
+        final SubjectConfirmationDataImpl subjectConfirmationData = subjectConfirmationDataBuilder.buildObject();
         subjectConfirmationData.setRecipient(assertParameters.getServiceUrl());
         subjectConfirmationData.setInResponseTo(assertParameters.getRequestId());
         subjectConfirmationData.setNotOnOrAfter(until);
 
-        SubjectConfirmationImpl sc = subjectConfirmationBuilder.buildObject();
+        final SubjectConfirmationImpl sc = subjectConfirmationBuilder.buildObject();
         // The bearer of this assertion is authenticated for the contained attributes.
         sc.setMethod(SubjectConfirmation.METHOD_BEARER);
         sc.setSubjectConfirmationData(subjectConfirmationData);
@@ -373,8 +350,8 @@ public class OpenSamlService {
      * @return A String containing the randomly generated identifier
      */
     private String generateId() {
-        byte[] bytes = new byte[20];
-        Random random = new Random();
+        final byte[] bytes = new byte[20];
+        final Random random = new Random();
         random.nextBytes(bytes);
         return new String(Base64.getEncoder().encode(bytes));
     }
@@ -389,15 +366,15 @@ public class OpenSamlService {
      * @throws SignatureException           The signature exception is thrown when the SAML response cannot be signed.
      * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
-    public String marshallResponse(Response response)
+    public String marshallResponse(final Response response)
             throws MarshallingException, TransformerException, SignatureException, CertificateEncodingException {
-        MarshallerFactory factory = XMLObjectProviderRegistrySupport.getMarshallerFactory();
-        ResponseMarshaller marshaller = (ResponseMarshaller) factory.getMarshaller(response);
+        final MarshallerFactory factory = XMLObjectProviderRegistrySupport.getMarshallerFactory();
+        final ResponseMarshaller marshaller = (ResponseMarshaller) factory.getMarshaller(response);
 
-        Signature signature = this.createSignature();
+        final Signature signature = this.createSignature();
         response.setSignature(signature);
 
-        Element element = marshaller.marshall(response);
+        final Element element = marshaller.marshall(response);
         Signer.signObject(signature);
 
         return this.marshallToString(element);
@@ -410,47 +387,43 @@ public class OpenSamlService {
      * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     public EntityDescriptor createIdPMetadata() throws CertificateEncodingException {
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<EntityDescriptorImpl> edBuilder = (SAMLObjectBuilder<EntityDescriptorImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<EntityDescriptorImpl> edBuilder = (SAMLObjectBuilder<EntityDescriptorImpl>) factory
                 .getBuilder(EntityDescriptor.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<IDPSSODescriptorImpl> idpssodBuilder = (SAMLObjectBuilder<IDPSSODescriptorImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<IDPSSODescriptorImpl> idpssodBuilder = (SAMLObjectBuilder<IDPSSODescriptorImpl>) factory
                 .getBuilder(IDPSSODescriptor.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<KeyDescriptorImpl> keydBuilder = (SAMLObjectBuilder<KeyDescriptorImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<KeyDescriptorImpl> keydBuilder = (SAMLObjectBuilder<KeyDescriptorImpl>) factory
                 .getBuilder(KeyDescriptor.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<SingleSignOnServiceImpl> ssosBuilder = (SAMLObjectBuilder<SingleSignOnServiceImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<SingleSignOnServiceImpl> ssosBuilder = (SAMLObjectBuilder<SingleSignOnServiceImpl>) factory
                 .getBuilder(SingleSignOnService.DEFAULT_ELEMENT_NAME);
 
-        Configuration configuration = this.configurationService.getConfiguration();
+        final Configuration configuration = this.configurationService.getConfiguration();
 
-        IDPSSODescriptorImpl idpSsoDescriptor = idpssodBuilder.buildObject();
+        final IDPSSODescriptorImpl idpSsoDescriptor = idpssodBuilder.buildObject();
         idpSsoDescriptor.setWantAuthnRequestsSigned(true);
 
         // We only include a signing key.
-        KeyInfo keyInfo = this.createKeyInfoForCertificate();
+        final KeyInfo keyInfo = this.createKeyInfoForCertificate();
 
-        KeyDescriptorImpl sigKey = keydBuilder.buildObject();
+        final KeyDescriptorImpl sigKey = keydBuilder.buildObject();
         sigKey.setUse(UsageType.SIGNING);
         sigKey.setKeyInfo(keyInfo);
 
         idpSsoDescriptor.getKeyDescriptors().add(sigKey);
         idpSsoDescriptor.addSupportedProtocol(SAMLConstants.SAML20P_NS);
 
-        SingleSignOnServiceImpl singleSignOnService = ssosBuilder.buildObject();
+        final SingleSignOnServiceImpl singleSignOnService = ssosBuilder.buildObject();
         // We only support HTTP redirects.
         singleSignOnService.setBinding(SAML_BINDINGS_REDIRECT);
         singleSignOnService.setLocation(configuration.constructUrl("/request"));
 
         idpSsoDescriptor.getSingleSignOnServices().add(singleSignOnService);
 
-        EntityDescriptorImpl entityDescriptor = edBuilder.buildObject();
+        final EntityDescriptorImpl entityDescriptor = edBuilder.buildObject();
         entityDescriptor.setEntityID(configuration.getIssuerName());
         entityDescriptor.getRoleDescriptors().add(idpSsoDescriptor);
-        entityDescriptor.setCacheDuration(Duration.of(30000l, ChronoUnit.MILLIS));
+        entityDescriptor.setCacheDuration(Duration.of(30000L, ChronoUnit.MILLIS));
 
         return entityDescriptor;
     }
@@ -463,77 +436,69 @@ public class OpenSamlService {
      * @throws CertificateEncodingException The certificate encoding exception is thrown when the SAML certificate cannot be encoded.
      */
     public EntityDescriptor createSPMetadata() throws CertificateEncodingException {
-        Configuration configuration = this.configurationService.getConfiguration();
+        final Configuration configuration = this.configurationService.getConfiguration();
 
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<EntityDescriptorImpl> edBuilder = (SAMLObjectBuilder<EntityDescriptorImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<EntityDescriptorImpl> edBuilder = (SAMLObjectBuilder<EntityDescriptorImpl>) factory
                 .getBuilder(EntityDescriptor.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<SPSSODescriptorImpl> spssodBuilder = (SAMLObjectBuilder<SPSSODescriptorImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<SPSSODescriptorImpl> spssodBuilder = (SAMLObjectBuilder<SPSSODescriptorImpl>) factory
                 .getBuilder(SPSSODescriptor.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<KeyDescriptorImpl> keydBuilder = (SAMLObjectBuilder<KeyDescriptorImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<KeyDescriptorImpl> keydBuilder = (SAMLObjectBuilder<KeyDescriptorImpl>) factory
                 .getBuilder(KeyDescriptor.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AssertionConsumerServiceImpl> assertionConsumerServiceBuilder = (SAMLObjectBuilder<AssertionConsumerServiceImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AssertionConsumerServiceImpl> assertionConsumerServiceBuilder = (SAMLObjectBuilder<AssertionConsumerServiceImpl>) factory
                 .getBuilder(AssertionConsumerService.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<OrganizationURLImpl> urlBuilder = (SAMLObjectBuilder<OrganizationURLImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<OrganizationURLImpl> urlBuilder = (SAMLObjectBuilder<OrganizationURLImpl>) factory
                 .getBuilder(OrganizationURL.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<OrganizationNameImpl> nameBuilder = (SAMLObjectBuilder<OrganizationNameImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<OrganizationNameImpl> nameBuilder = (SAMLObjectBuilder<OrganizationNameImpl>) factory
                 .getBuilder(OrganizationName.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<OrganizationDisplayNameImpl> displayNameBuilder = (SAMLObjectBuilder<OrganizationDisplayNameImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<OrganizationDisplayNameImpl> displayNameBuilder = (SAMLObjectBuilder<OrganizationDisplayNameImpl>) factory
                 .getBuilder(OrganizationDisplayName.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<OrganizationImpl> organizationBuilder = (SAMLObjectBuilder<OrganizationImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<OrganizationImpl> organizationBuilder = (SAMLObjectBuilder<OrganizationImpl>) factory
                 .getBuilder(Organization.DEFAULT_ELEMENT_NAME);
 
-        SPSSODescriptorImpl spSsoDescriptor = spssodBuilder.buildObject();
+        final SPSSODescriptorImpl spSsoDescriptor = spssodBuilder.buildObject();
         spSsoDescriptor.setWantAssertionsSigned(true);
 
         // We only include a signing key.
-        KeyInfo keyInfo = this.createKeyInfoForCertificate();
+        final KeyInfo keyInfo = this.createKeyInfoForCertificate();
 
-        KeyDescriptorImpl sigKey = keydBuilder.buildObject();
+        final KeyDescriptorImpl sigKey = keydBuilder.buildObject();
         sigKey.setUse(UsageType.SIGNING);
         sigKey.setKeyInfo(keyInfo);
 
         spSsoDescriptor.getKeyDescriptors().add(sigKey);
         spSsoDescriptor.addSupportedProtocol(SAMLConstants.SAML20P_NS);
 
-        AssertionConsumerService assertionConsumerService = assertionConsumerServiceBuilder.buildObject();
+        final AssertionConsumerService assertionConsumerService = assertionConsumerServiceBuilder.buildObject();
         assertionConsumerService.setIndex(0);
         assertionConsumerService.setBinding(SAML_BINDINGS_REDIRECT);
         assertionConsumerService.setLocation("/irma-saml-bridge/test/return");
         spSsoDescriptor.getAssertionConsumerServices().add(assertionConsumerService);
 
-        OrganizationDisplayNameImpl organizationDisplayName = displayNameBuilder.buildObject();
+        final OrganizationDisplayNameImpl organizationDisplayName = displayNameBuilder.buildObject();
         organizationDisplayName.setValue("SIDN");
         organizationDisplayName.setXMLLang("en");
 
-        OrganizationNameImpl organizationName = nameBuilder.buildObject();
+        final OrganizationNameImpl organizationName = nameBuilder.buildObject();
         organizationName.setValue("SIDN");
         organizationName.setXMLLang("en");
 
-        OrganizationURLImpl organizationUrl = urlBuilder.buildObject();
+        final OrganizationURLImpl organizationUrl = urlBuilder.buildObject();
         organizationUrl.setURI(configuration.constructUrl("/test/metadata"));
         organizationUrl.setXMLLang("en");
 
-        OrganizationImpl organization = organizationBuilder.buildObject();
+        final OrganizationImpl organization = organizationBuilder.buildObject();
         organization.getURLs().add(organizationUrl);
         organization.getDisplayNames().add(organizationDisplayName);
         organization.getOrganizationNames().add(organizationName);
 
         spSsoDescriptor.setOrganization(organization);
 
-        EntityDescriptorImpl entityDescriptor = edBuilder.buildObject();
+        final EntityDescriptorImpl entityDescriptor = edBuilder.buildObject();
         entityDescriptor.setEntityID(configuration.getIssuerName());
         entityDescriptor.getRoleDescriptors().add(spSsoDescriptor);
-        entityDescriptor.setCacheDuration(Duration.of(30000l, ChronoUnit.MILLIS));
+        entityDescriptor.setCacheDuration(Duration.of(30000L, ChronoUnit.MILLIS));
 
         return entityDescriptor;
     }
@@ -547,9 +512,9 @@ public class OpenSamlService {
      * @throws MarshallingException The marshalling exception is thrown when the SAML metadata cannot be marshalled.
      * @throws TransformerException The transformer exception is thrown when the SAML metadata cannot be transformed to a string.
      */
-    public String marshallMetadata(EntityDescriptor metadata) throws MarshallingException, TransformerException {
-        MarshallerFactory factory = XMLObjectProviderRegistrySupport.getMarshallerFactory();
-        EntityDescriptorMarshaller marshaller = (EntityDescriptorMarshaller) factory.getMarshaller(metadata);
+    public String marshallMetadata(final EntityDescriptor metadata) throws MarshallingException, TransformerException {
+        final MarshallerFactory factory = XMLObjectProviderRegistrySupport.getMarshallerFactory();
+        final EntityDescriptorMarshaller marshaller = (EntityDescriptorMarshaller) factory.getMarshaller(metadata);
 
         return this.marshallToString(marshaller.marshall(metadata));
     }
@@ -561,17 +526,17 @@ public class OpenSamlService {
      * @return A string containing the XML object.
      * @throws TransformerException The transformer exception is thrown when the XML object cannot be transformed to a string.
      */
-    private String marshallToString(Element element) throws TransformerException {
-        DOMSource domSource = new DOMSource(element);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
+    private String marshallToString(final Element element) throws TransformerException {
+        final DOMSource domSource = new DOMSource(element);
+        final StringWriter writer = new StringWriter();
+        final StreamResult result = new StreamResult(writer);
 
         // Prevent XXE attacks when parsing element.
-        TransformerFactory tf = TransformerFactory.newInstance();
+        final TransformerFactory tf = TransformerFactory.newInstance();
         tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 
-        Transformer transformer = tf.newTransformer();
+        final Transformer transformer = tf.newTransformer();
         transformer.transform(domSource, result);
 
         return writer.toString();
@@ -586,15 +551,15 @@ public class OpenSamlService {
      * @throws UnmarshallingException The unmarshalling exception is thrown when the SAML response cannot be unmarshalled.
      * @throws XMLParserException     The XML parser exception is thrown when the SAML response cannot be parsed.
      */
-    public void verifyAssertionResponse(String response)
+    public void verifyAssertionResponse(final String response)
             throws SignatureException, XMLParserException, UnmarshallingException {
-        Response result = (Response) XMLObjectSupport.unmarshallFromReader(
+        final Response result = (Response) XMLObjectSupport.unmarshallFromReader(
                 parserPool, new StringReader(response));
 
-        Credential credential = new BasicX509Credential(
+        final Credential credential = new BasicX509Credential(
                 this.keyService.getSamlCertificate());
 
-        SAMLSignatureProfileValidator pv = new SAMLSignatureProfileValidator();
+        final SAMLSignatureProfileValidator pv = new SAMLSignatureProfileValidator();
         pv.validate(result.getSignature());
         SignatureValidator.validate(result.getSignature(), credential);
     }
@@ -608,14 +573,14 @@ public class OpenSamlService {
      * @param entityDescriptor The descriptor for the applicable metadata, which can
      *                         be retrieved from the SignatureValidationService.
      */
-    public String findRedirectAssertionConsumerService(EntityDescriptor entityDescriptor) {
-        SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
+    public String findRedirectAssertionConsumerService(final EntityDescriptor entityDescriptor) {
+        final SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
 
         if (spssoDescriptor == null) {
             return null;
         }
 
-        for (AssertionConsumerService assertionConsumerService : spssoDescriptor.getAssertionConsumerServices()) {
+        for (final AssertionConsumerService assertionConsumerService : spssoDescriptor.getAssertionConsumerServices()) {
             if (assertionConsumerService.getBinding().equals(SAML_BINDINGS_REDIRECT)) {
                 return assertionConsumerService.getLocation();
             }

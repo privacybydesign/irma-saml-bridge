@@ -37,7 +37,7 @@ public class AssertParameters {
      * @return A mapping of the fields in this object.
      */
     public Map<String, Object> toTreeMap() throws JsonProcessingException {
-        Map<String, Object> map = new TreeMap<>();
+        final Map<String, Object> map = new TreeMap<>();
         map.put("sp_name", this.spName);
         map.put("request_id", this.requestId);
         map.put("service_url", this.serviceUrl);
@@ -54,9 +54,8 @@ public class AssertParameters {
      * @param claims The JWT claims object.
      * @return The assert parameters object.
      */
-    public static AssertParameters fromClaims(Claims claims) throws JsonProcessingException {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> params = (Map<String, Object>) claims.get("aparams");
+    public static AssertParameters fromClaims(final Claims claims) throws JsonProcessingException {
+        @SuppressWarnings("unchecked") final Map<String, Object> params = (Map<String, Object>) claims.get("aparams");
 
         return AssertParameters.builder()
                 .spName((String) params.get("sp_name"))

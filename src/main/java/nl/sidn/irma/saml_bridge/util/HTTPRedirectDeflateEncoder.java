@@ -112,7 +112,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
     /**
      * Constructor.
      */
-    public HTTPRedirectDeflateEncoder(HttpServletResponse response) {
+    public HTTPRedirectDeflateEncoder(final HttpServletResponse response) {
         httpServletResponse = response;
     }
 
@@ -241,7 +241,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
             throws MessageEncodingException {
         log.debug("Building URL to redirect client to");
 
-        URLBuilder urlBuilder = null;
+        final URLBuilder urlBuilder;
         try {
             urlBuilder = new URLBuilder(endpoint);
         } catch (final MalformedURLException e) {
@@ -356,7 +356,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
         log.debug("Generating signature with key type '{}', algorithm URI '{}' over query string '{}'",
                 CredentialSupport.extractSigningKey(signingCredential).getAlgorithm(), algorithmURI, queryString);
 
-        String b64Signature;
+        final String b64Signature;
         try {
             final byte[] rawSignature = XMLSigningUtil.signWithURI(signingCredential, algorithmURI,
                     queryString.getBytes(StandardCharsets.UTF_8));
@@ -410,7 +410,7 @@ public class HTTPRedirectDeflateEncoder implements SAMLMessageEncoder {
     }
 
     @Override
-    public void setMessageContext(MessageContext messageContext) {
+    public void setMessageContext(final MessageContext messageContext) {
         this.messageContext = messageContext;
     }
 

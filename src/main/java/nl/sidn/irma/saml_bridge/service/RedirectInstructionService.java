@@ -29,12 +29,12 @@ public class RedirectInstructionService {
     private final OpenSamlService openSamlService;
 
     public RedirectInstructionService(
-            OpenSamlService openSamlService
+            final OpenSamlService openSamlService
     ) {
         this.openSamlService = openSamlService;
     }
 
-    public RedirectInstruction create(AssertParameters assertParameters, ResultStatus status) throws BridgeException {
+    public RedirectInstruction create(final AssertParameters assertParameters, final ResultStatus status) throws BridgeException {
         return create(assertParameters, null, status);
     }
 
@@ -45,21 +45,21 @@ public class RedirectInstructionService {
      * @return A properly populated return instruction.
      * @throws BridgeException The bridge exception is thrown when something goes wrong during the creation of the redirect instruction.
      */
-    public RedirectInstruction create(AssertParameters assertParameters, Disclosure disclosure, ResultStatus status) throws BridgeException {
+    public RedirectInstruction create(final AssertParameters assertParameters, final Disclosure disclosure, final ResultStatus status) throws BridgeException {
         // Create a SAML assertion.
-        Response assertion = this.openSamlService.createAssertionResponse(assertParameters, disclosure, status);
+        final Response assertion = this.openSamlService.createAssertionResponse(assertParameters, disclosure, status);
 
         // Encode that SAML assertion as a signed XML response.
-        String samlResponse;
+        final String samlResponse;
         try {
             samlResponse = this.openSamlService.marshallResponse(assertion);
-        } catch (MarshallingException e) {
+        } catch (final MarshallingException e) {
             log.error("action=\"redirectinstruction.create\", error=\"Failed to marshall assertion\"", e);
             throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to marshall assertion");
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             log.error("action=\"redirectinstruction.create\", error=\"Failed to write assertion\"", e);
             throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write assertion");
-        } catch (SignatureException | CertificateEncodingException e) {
+        } catch (final SignatureException | CertificateEncodingException e) {
             // Something was misconfigured with the private key for signing.
             log.error("action=\"redirectinstruction.create\", error=\"Failed to write signature\"", e);
             throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write signature");
@@ -68,7 +68,7 @@ public class RedirectInstructionService {
         // For debugging we always validate our own signature, but continue when it is invalid.
         try {
             this.openSamlService.verifyAssertionResponse(samlResponse);
-        } catch (SignatureException | XMLParserException | UnmarshallingException e) {
+        } catch (final SignatureException | XMLParserException | UnmarshallingException e) {
             log.error("action=\"redirectinstruction.create\", error=\"Failed to validate signature or format of our assertion\"", e);
             throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to validate signature or format of our assertion");
         }
@@ -80,7 +80,7 @@ public class RedirectInstructionService {
                     .serviceUrl(assertParameters.getServiceUrl())
                     .relayState(assertParameters.getRelayState())
                     .build();
-        } catch (EncodingException e) {
+        } catch (final EncodingException e) {
             throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed with encoding issue: " + e.getMessage());
         }
 

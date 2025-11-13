@@ -135,7 +135,7 @@ public class Configuration {
         return isHttpsUsed() ? "https://" : "http://";
     }
 
-    public String constructUrl(String path) {
+    public String constructUrl(final String path) {
         return getProtocol() + getHost() + getPostfix() + path;
     }
 }

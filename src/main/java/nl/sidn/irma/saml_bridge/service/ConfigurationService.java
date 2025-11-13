@@ -26,7 +26,7 @@ public class ConfigurationService {
     private Configuration configuration;
 
     public ConfigurationService(
-            ObjectMapper objectMapper
+            final ObjectMapper objectMapper
     ) {
         this.objectMapper = objectMapper;
         initialize();
@@ -41,14 +41,14 @@ public class ConfigurationService {
         if (path == null) {
             path = DEFAULT_CONFIG_PATH;
         }
-        try (FileReader fr = new FileReader(path)) {
+        try (final FileReader fr = new FileReader(path)) {
             configuration = objectMapper.readValue(fr, Configuration.class);
             log.info("action=\"initialize\", Loaded configuration from path=\"{}\"", path);
 
             configuration.validate();
-        } catch (InvalidConfigurationException e) {
+        } catch (final InvalidConfigurationException e) {
             log.error("Invalid configuration was found", e);
-        } catch (NullPointerException | IOException e) {
+        } catch (final NullPointerException | IOException e) {
             log.error("Could not load configuration", e);
         }
     }

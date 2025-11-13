@@ -39,26 +39,25 @@ public class Disclosure {
      * @return The disclosure.
      * @throws MalformedException The malformed exception.
      */
-    public static Disclosure fromJwt(Jws<Claims> jwt) throws MalformedException {
-        ArrayList<ArrayList<Map<String, Object>>> disclosed;
+    public static Disclosure fromJwt(final Jws<Claims> jwt) throws MalformedException {
+        final ArrayList<ArrayList<Map<String, Object>>> disclosed;
 
         try {
             // First allocate a temporary value, due to analysis bug in Eclipse
-            @SuppressWarnings("unchecked")
-            ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getPayload().get("disclosed");
+            @SuppressWarnings("unchecked") final ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getPayload().get("disclosed");
             disclosed = tmp;
 
-        } catch (ClassCastException e) {
+        } catch (final ClassCastException e) {
             throw new MalformedException();
         }
 
-        Map<String, String> attributes = new TreeMap<>();
-        for (List<Map<String, Object>> con : disclosed) {
+        final Map<String, String> attributes = new TreeMap<>();
+        for (final List<Map<String, Object>> con : disclosed) {
             boolean allPresent = true;
-            Map<String, String> ourAttributes = new TreeMap<>();
+            final Map<String, String> ourAttributes = new TreeMap<>();
 
-            for (Map<String, Object> attribute : con) {
-                String status = (String) attribute.get("status");
+            for (final Map<String, Object> attribute : con) {
+                final String status = (String) attribute.get("status");
                 // TODO: Optional attributes (with status NULL) cannot be handled.
                 if (!status.equals("PRESENT")) {
                     allPresent = false;
@@ -73,7 +72,7 @@ public class Disclosure {
             }
         }
 
-        Disclosure result = new Disclosure();
+        final Disclosure result = new Disclosure();
         result.attributes = attributes;
         result.proofStatus = (String) jwt.getPayload().get("proofStatus");
         result.token = (String) jwt.getPayload().get("token");
@@ -87,8 +86,8 @@ public class Disclosure {
      * @param condiscon The condiscon to check.
      * @return Compliance or failure.
      */
-    public boolean fulfillsCondiscon(String[][][] condiscon) {
-        for (String[][] discon : condiscon) {
+    public boolean fulfillsCondiscon(final String[][][] condiscon) {
+        for (final String[][] discon : condiscon) {
             if (!this.fulfillsDiscon(discon)) {
                 return false;
             }
@@ -102,8 +101,8 @@ public class Disclosure {
      * @param discon The discon to check.
      * @return Compliance or failure.
      */
-    public boolean fulfillsDiscon(String[][] discon) {
-        for (String[] con : discon) {
+    public boolean fulfillsDiscon(final String[][] discon) {
+        for (final String[] con : discon) {
             if (this.fulfillsCon(con)) {
                 return true;
             }
@@ -117,8 +116,8 @@ public class Disclosure {
      * @param con The con to check.
      * @return Compliance or failure.
      */
-    public boolean fulfillsCon(String[] con) {
-        for (String id : con) {
+    public boolean fulfillsCon(final String[] con) {
+        for (final String id : con) {
             if (!this.attributes.containsKey(id)) {
                 return false;
             }

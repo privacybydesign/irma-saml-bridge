@@ -32,12 +32,7 @@ public class ErrorAssertController {
 
     private final RedirectInstructionService redirectInstructionService;
 
-    public ErrorAssertController(
-            ObjectMapper objectMapper,
-            KeyService keyService,
-            JwtUtil jwtUtil,
-            RedirectInstructionService redirectInstructionService
-    ) {
+    public ErrorAssertController(final ObjectMapper objectMapper, final KeyService keyService, final JwtUtil jwtUtil, final RedirectInstructionService redirectInstructionService) {
         this.objectMapper = objectMapper;
         this.keyService = keyService;
         this.jwtUtil = jwtUtil;
@@ -52,9 +47,7 @@ public class ErrorAssertController {
      * @throws IOException The exception is thrown when something goes wrong during IO.
      */
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void error(
-            HttpServletRequest request,
-            HttpServletResponse response
+    public void error(final HttpServletRequest request, final HttpServletResponse response
 
     ) throws IOException {
         handleError(request, response, null);
@@ -68,47 +61,35 @@ public class ErrorAssertController {
      * @throws IOException The exception is thrown when something goes wrong during IO.
      */
     @PostMapping(value = "/abort", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void errorAbort(
-            HttpServletRequest request,
-            HttpServletResponse response
+    public void errorAbort(final HttpServletRequest request, final HttpServletResponse response
 
     ) throws IOException {
-        handleError(request, response, RequestError.builder()
-                .statusCode(HttpStatus.BAD_REQUEST.value())
-                .message("The user cancelled.")
-                .build());
+        handleError(request, response, RequestError.builder().statusCode(HttpStatus.BAD_REQUEST.value()).message("The user cancelled.").build());
     }
 
-    private void handleError(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            RequestError requestError
-    ) throws IOException {
+    private void handleError(final HttpServletRequest request, final HttpServletResponse response, final RequestError requestError) throws IOException {
         // We receive a JSON POST body, and parse it.
-        AssertRequest assertRequest = objectMapper.readValue(request.getReader(), AssertRequest.class);
+        final AssertRequest assertRequest = objectMapper.readValue(request.getReader(), AssertRequest.class);
 
         // Decode our pre-prepared set of assertion parameters.
-        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPublicKey(), assertRequest.getParameters());
+        final Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPublicKey(), assertRequest.getParameters());
 
         // Unpack the Assertion parameters.
-        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
+        final AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
         if (requestError != null) {
             assertParameters.setRequestError(requestError);
         }
 
         //something went wrong in the frontend, we don't have a specific error
         if (assertParameters.getRequestError() == null) {
-            assertParameters.setRequestError(RequestError.builder()
-                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                    .message("Something went wrong in the frontend")
-                    .build());
+            assertParameters.setRequestError(RequestError.builder().statusCode(HttpStatus.BAD_REQUEST.value()).message("Something went wrong in the frontend").build());
         }
 
         // Construct the set of instructions to the React applet.
-        RedirectInstruction ri;
+        final RedirectInstruction ri;
         try {
             ri = this.redirectInstructionService.create(assertParameters, ResultStatus.FAILED);
-        } catch (BridgeException e) {
+        } catch (final BridgeException e) {
             response.setStatus(e.getHttpStatusCode());
             response.getWriter().write(e.getMessage());
             return;

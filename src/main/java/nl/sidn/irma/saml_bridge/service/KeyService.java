@@ -59,8 +59,8 @@ public class KeyService {
     private final KeyReader keyReader;
 
     public KeyService(
-            ConfigurationService configurationService,
-            KeyReader keyReader
+            final ConfigurationService configurationService,
+            final KeyReader keyReader
     ) throws CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, IOException {
         this.configurationService = configurationService;
         this.keyReader = keyReader;
@@ -77,14 +77,14 @@ public class KeyService {
      * @throws CertificateException     The certificate exception is thrown when a certificate is malformed.
      */
     private void initialize() throws InvalidKeySpecException, NoSuchAlgorithmException, IOException, CertificateException {
-        Configuration conf = configurationService.getConfiguration();
+        final Configuration conf = configurationService.getConfiguration();
 
         this.jwtPrivateKey = keyReader.getPrivate(conf.getJwtPrivateKeyPath());
 
         if (conf.getJwtPublicKeyPath() != null) {
             this.jwtPublicKey = keyReader.getPublic(conf.getJwtPublicKeyPath());
-        } else if (jwtPrivateKey instanceof RSAPrivateCrtKey crt) {
-            var spec = new RSAPublicKeySpec(crt.getModulus(), crt.getPublicExponent());
+        } else if (jwtPrivateKey instanceof final RSAPrivateCrtKey crt) {
+            final var spec = new RSAPublicKeySpec(crt.getModulus(), crt.getPublicExponent());
             this.jwtPublicKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(spec);
         } else {
             throw new IllegalStateException("No JWT public key configured and cannot derive from private key.");
@@ -94,7 +94,7 @@ public class KeyService {
         this.samlCertificate = keyReader.getCertificate(conf.getSamlCertificatePath());
         this.samlPrivateKey = keyReader.getPrivate(conf.getSamlPrivateKeyPath());
 
-        String irmaPrivateKeyTest = conf.getTestIrmaPrivateKeyPath();
+        final String irmaPrivateKeyTest = conf.getTestIrmaPrivateKeyPath();
         if (irmaPrivateKeyTest != null) {
             this.testIrmaPrivateKey = keyReader.getPrivate(irmaPrivateKeyTest);
         }

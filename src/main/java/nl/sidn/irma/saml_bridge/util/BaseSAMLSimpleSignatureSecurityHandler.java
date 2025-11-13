@@ -96,7 +96,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
     /**
      * Gets the engine used to validate the signature.
      *
-     * @return engine engine used to validate the signature
+     * @return Signature trust engine used to validate the signature
      */
     @Nullable
     protected SignatureTrustEngine getTrustEngine() {
@@ -170,8 +170,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
         }
 
         final SecurityParametersContext secParams = messageContext.getSubcontext(SecurityParametersContext.class);
-        if (secParams == null || secParams.getSignatureValidationParameters() == null
-                || secParams.getSignatureValidationParameters().getSignatureTrustEngine() == null) {
+        if (secParams == null || secParams.getSignatureValidationParameters() == null || secParams.getSignatureValidationParameters().getSignatureTrustEngine() == null) {
             throw new MessageHandlerException("No SignatureTrustEngine was available from the MessageContext");
         }
         trustEngine = secParams.getSignatureValidationParameters().getSignatureTrustEngine();
@@ -201,8 +200,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
 
         final String sigAlg = getSignatureAlgorithm();
         if (Strings.isNullOrEmpty(sigAlg)) {
-            log.warn("{} Signature algorithm could not be extracted from request, cannot validate simple signature",
-                    getLogPrefix());
+            log.warn("{} Signature algorithm could not be extracted from request, cannot validate simple signature", getLogPrefix());
             return;
         }
 
@@ -229,9 +227,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      *                                 signature validation process
      *
      */
-    private void doEvaluate(@Nonnull @NotEmpty final byte[] signature, @Nonnull @NotEmpty final byte[] signedContent,
-                            @Nonnull @NotEmpty final String algorithmURI, @Nonnull final MessageContext messageContext)
-            throws MessageHandlerException {
+    private void doEvaluate(@Nonnull @NotEmpty final byte[] signature, @Nonnull @NotEmpty final byte[] signedContent, @Nonnull @NotEmpty final String algorithmURI, @Nonnull final MessageContext messageContext) throws MessageHandlerException {
 
         final List<Credential> candidateCredentials = getRequestCredentials();
 
@@ -240,46 +236,38 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
         // TODO authentication flags - on peer or on message?
 
         if (contextEntityID != null) {
-            log.debug("{} Attempting to validate SAML protocol message simple signature using context entityID: {}",
-                    getLogPrefix(), contextEntityID);
+            log.debug("{} Attempting to validate SAML protocol message simple signature using context entityID: {}", getLogPrefix(), contextEntityID);
             final CriteriaSet criteriaSet = buildCriteriaSet(contextEntityID, messageContext);
             if (validateSignature(signature, signedContent, algorithmURI, criteriaSet, candidateCredentials)) {
                 log.debug("{} Validation of request simple signature succeeded", getLogPrefix());
                 if (!peerContext.isAuthenticated()) {
-                    log.debug(
-                            "{} Authentication via request simple signature succeeded for context issuer entity ID {}",
-                            getLogPrefix(), contextEntityID);
+                    log.debug("{} Authentication via request simple signature succeeded for context issuer entity ID {}", getLogPrefix(), contextEntityID);
                     peerContext.setAuthenticated(true);
                 }
                 return;
             }
-            log.warn("{} Validation of request simple signature failed for context issuer: {}", getLogPrefix(),
-                    contextEntityID);
+            log.warn("{} Validation of request simple signature failed for context issuer: {}", getLogPrefix(), contextEntityID);
             throw new MessageHandlerException("Validation of request simple signature failed for context issuer");
         }
 
         final String derivedEntityID = deriveSignerEntityID();
         if (derivedEntityID != null) {
-            log.debug("{} Attempting to validate SAML protocol message simple signature using derived entityID: {}",
-                    getLogPrefix(), derivedEntityID);
+            log.debug("{} Attempting to validate SAML protocol message simple signature using derived entityID: {}", getLogPrefix(), derivedEntityID);
             final CriteriaSet criteriaSet = buildCriteriaSet(derivedEntityID, messageContext);
             if (validateSignature(signature, signedContent, algorithmURI, criteriaSet, candidateCredentials)) {
                 log.debug("{} Validation of request simple signature succeeded", getLogPrefix());
                 if (!peerContext.isAuthenticated()) {
-                    log.debug("{} Authentication via request simple signature succeeded for derived issuer {}",
-                            getLogPrefix(), derivedEntityID);
+                    log.debug("{} Authentication via request simple signature succeeded for derived issuer {}", getLogPrefix(), derivedEntityID);
                     peerContext.setEntityId(derivedEntityID);
                     peerContext.setAuthenticated(true);
                 }
                 return;
             }
-            log.warn("{} Validation of request simple signature failed for derived issuer: {}", getLogPrefix(),
-                    derivedEntityID);
+            log.warn("{} Validation of request simple signature failed for derived issuer: {}", getLogPrefix(), derivedEntityID);
             throw new MessageHandlerException("Validation of request simple signature failed for derived issuer");
         }
 
-        log.warn("{} Neither context nor derived issuer available, cannot attempt SAML simple signature validation",
-                getLogPrefix());
+        log.warn("{} Neither context nor derived issuer available, cannot attempt SAML simple signature validation", getLogPrefix());
         throw new MessageHandlerException("No message issuer available, cannot attempt simple signature validation");
     }
 
@@ -301,10 +289,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      *                                 signature validation process
      *
      */
-    protected boolean validateSignature(@Nonnull @NotEmpty final byte[] signature,
-                                        @Nonnull @NotEmpty final byte[] signedContent, @Nonnull @NotEmpty final String algorithmURI,
-                                        @Nonnull final CriteriaSet criteriaSet,
-                                        @Nonnull @NonnullElements final List<Credential> candidateCredentials) throws MessageHandlerException {
+    protected boolean validateSignature(@Nonnull @NotEmpty final byte[] signature, @Nonnull @NotEmpty final byte[] signedContent, @Nonnull @NotEmpty final String algorithmURI, @Nonnull final CriteriaSet criteriaSet, @Nonnull @NonnullElements final List<Credential> candidateCredentials) throws MessageHandlerException {
 
         final SignatureTrustEngine engine = getTrustEngine();
 
@@ -314,26 +299,22 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
         try {
             if (candidateCredentials.isEmpty()) {
                 if (engine.validate(signature, signedContent, algorithmURI, criteriaSet, null)) {
-                    log.debug("{} Simple signature validation (with no request-derived credentials) was successful",
-                            getLogPrefix());
+                    log.debug("{} Simple signature validation (with no request-derived credentials) was successful", getLogPrefix());
                     return true;
                 }
-                log.warn("{} Simple signature validation (with no request-derived credentials) failed",
-                        getLogPrefix());
+                log.warn("{} Simple signature validation (with no request-derived credentials) failed", getLogPrefix());
                 return false;
             }
             for (final Credential cred : candidateCredentials) {
                 if (engine.validate(signature, signedContent, algorithmURI, criteriaSet, cred)) {
-                    log.debug("{} Simple signature validation succeeded with a request-derived credential",
-                            getLogPrefix());
+                    log.debug("{} Simple signature validation succeeded with a request-derived credential", getLogPrefix());
                     return true;
                 }
             }
             log.warn("{} Signature validation using request-derived credentials failed", getLogPrefix());
             return false;
         } catch (final SecurityException e) {
-            log.warn("{} Error evaluating the request's simple signature using the trust engine: {}", getLogPrefix(),
-                    e.getMessage());
+            log.warn("{} Error evaluating the request's simple signature using the trust engine: {}", getLogPrefix(), e.getMessage());
             throw new MessageHandlerException("Error during trust engine evaluation of the simple signature", e);
         }
     }
@@ -415,8 +396,7 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * engine
      */
     @Nonnull
-    protected CriteriaSet buildCriteriaSet(@Nullable final String entityID,
-                                           @Nonnull final MessageContext messageContext) {
+    protected CriteriaSet buildCriteriaSet(@Nullable final String entityID, @Nonnull final MessageContext messageContext) {
 
         final CriteriaSet criteriaSet = new CriteriaSet();
         if (!Strings.isNullOrEmpty(entityID)) {
@@ -427,11 +407,9 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
         criteriaSet.add(new ProtocolCriterion(samlProtocolContext.getProtocol()));
         criteriaSet.add(new UsageCriterion(UsageType.SIGNING));
 
-        final SecurityParametersContext secParamsContext = messageContext
-                .getSubcontext(SecurityParametersContext.class);
+        final SecurityParametersContext secParamsContext = messageContext.getSubcontext(SecurityParametersContext.class);
         if (secParamsContext != null && secParamsContext.getSignatureValidationParameters() != null) {
-            criteriaSet.add(
-                    new SignatureValidationParametersCriterion(secParamsContext.getSignatureValidationParameters()));
+            criteriaSet.add(new SignatureValidationParametersCriterion(secParamsContext.getSignatureValidationParameters()));
         }
 
         return criteriaSet;
@@ -460,7 +438,6 @@ public abstract class BaseSAMLSimpleSignatureSecurityHandler extends AbstractMes
      * @throws MessageHandlerException thrown if there is an error during request
      *                                 processing
      */
-    protected abstract boolean ruleHandles()
-            throws MessageHandlerException;
+    protected abstract boolean ruleHandles() throws MessageHandlerException;
 
 }

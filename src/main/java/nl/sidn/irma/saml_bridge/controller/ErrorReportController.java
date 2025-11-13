@@ -18,31 +18,20 @@ public class ErrorReportController {
 
     private final ObjectMapper objectMapper;
 
-    public ErrorReportController(
-            ObjectMapper objectMapper
-    ) {
+    public ErrorReportController(final ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @PostMapping(value = "")
-    public void report(
-            HttpServletRequest request,
-            HttpServletResponse response
+    public void report(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+        final ClientError error = objectMapper.readValue(request.getReader(), ClientError.class);
 
-    ) throws IOException {
-        ClientError error = objectMapper.readValue(request.getReader(), ClientError.class);
-
-        log.warn("action=\"clientsideerror\", source=\"{}\", linenr=\"{}\", colnr=\"{}\", message=\"{}\"",
-                limitString(error.getSource(), 50),
-                error.getLineno(),
-                error.getColno(),
-                limitString(error.getMessage(), 256)
-        );
+        log.warn("action=\"clientsideerror\", source=\"{}\", linenr=\"{}\", colnr=\"{}\", message=\"{}\"", limitString(error.getSource(), 50), error.getLineno(), error.getColno(), limitString(error.getMessage(), 256));
 
         response.setStatus(200);
     }
 
-    private static String limitString(String str, int length) {
+    private static String limitString(final String str, final int length) {
         if (str == null) {
             return null;
         }

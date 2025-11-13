@@ -36,7 +36,11 @@ class MetadataControllerTest {
 
     @Test
     void metadataTest() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(get(BASE_URL))
+        final X509Certificate certificate = mock(X509Certificate.class);
+        when(certificate.getEncoded()).thenReturn("test".getBytes());
+
+        when(keyService.getSamlCertificate()).thenReturn(certificate);
+        final MvcResult mvcResult = mockMvc.perform(get(BASE_URL))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -47,7 +51,7 @@ class MetadataControllerTest {
     void metadataTestThrowCertificateEncodingException() throws Exception {
         when(keyService.getSamlCertificate()).thenReturn(mock(X509Certificate.class));
         when(keyService.getSamlCertificate().getEncoded()).thenThrow(mock(CertificateEncodingException.class));
-        MvcResult mvcResult = mockMvc.perform(get(BASE_URL))
+        final MvcResult mvcResult = mockMvc.perform(get(BASE_URL))
                 .andExpect(status().isInternalServerError())
                 .andReturn();
 

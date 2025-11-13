@@ -17,7 +17,7 @@ public class ReturnTestController {
 
     @PostMapping(value = "")
     public void testReturn(
-            HttpServletResponse response) throws IOException {
+            final HttpServletResponse response) throws IOException {
         response.setStatus(200);
         response.getWriter().write(
                 "This is a placeholder page to which you have been redirected. No SAML response was verified. It is fine to see this page when testing.");

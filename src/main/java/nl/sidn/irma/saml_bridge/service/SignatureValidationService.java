@@ -64,8 +64,8 @@ public class SignatureValidationService {
     private ChainingMetadataResolver metadataResolver;
 
     public SignatureValidationService(
-            ConfigurationService configurationService,
-            ParserPool parserPool) throws ResolverException, ComponentInitializationException {
+            final ConfigurationService configurationService,
+            final ParserPool parserPool) throws ResolverException, ComponentInitializationException {
         this.configurationService = configurationService;
         this.parserPool = parserPool;
         initialize();
@@ -82,10 +82,10 @@ public class SignatureValidationService {
     private void initialize() throws ResolverException, ComponentInitializationException {
         // TODO properly reload trust engine periodically
 
-        File directory = new File(this.configurationService.getConfiguration().getSamlMetadataPath());
+        final File directory = new File(this.configurationService.getConfiguration().getSamlMetadataPath());
 
-        for (File metadata : Objects.requireNonNull(directory.listFiles())) {
-            FilesystemMetadataResolver fs = new FilesystemMetadataResolver(metadata);
+        for (final File metadata : Objects.requireNonNull(directory.listFiles())) {
+            final FilesystemMetadataResolver fs = new FilesystemMetadataResolver(metadata);
             fs.setId("fs-metadataresolver-" + metadata.getName());
             fs.setParserPool(parserPool);
             fs.initialize();
@@ -98,18 +98,18 @@ public class SignatureValidationService {
         this.metadataResolver.setResolvers(this.resolvers);
         this.metadataResolver.initialize();
 
-        ArrayList<KeyInfoProvider> kips = new ArrayList<>();
+        final ArrayList<KeyInfoProvider> kips = new ArrayList<>();
         kips.add(new DEREncodedKeyValueProvider());
         kips.add(new DSAKeyValueProvider());
         kips.add(new RSAKeyValueProvider());
         kips.add(new InlineX509DataProvider());
 
-        BasicProviderKeyInfoCredentialResolver kicr = new BasicProviderKeyInfoCredentialResolver(kips);
+        final BasicProviderKeyInfoCredentialResolver kicr = new BasicProviderKeyInfoCredentialResolver(kips);
 
-        PredicateRoleDescriptorResolver rd = new PredicateRoleDescriptorResolver(this.metadataResolver);
+        final PredicateRoleDescriptorResolver rd = new PredicateRoleDescriptorResolver(this.metadataResolver);
         rd.initialize();
 
-        MetadataCredentialResolver resolver = new MetadataCredentialResolver();
+        final MetadataCredentialResolver resolver = new MetadataCredentialResolver();
         resolver.setKeyInfoCredentialResolver(kicr);
         resolver.setRoleDescriptorResolver(rd);
         resolver.initialize();
@@ -125,7 +125,7 @@ public class SignatureValidationService {
      */
     @PreDestroy
     public void cleanup() {
-        for (FilesystemMetadataResolver resolver : this.resolvers) {
+        for (final FilesystemMetadataResolver resolver : this.resolvers) {
             resolver.destroy();
         }
     }
@@ -143,12 +143,12 @@ public class SignatureValidationService {
      * @throws MessageHandlerException          Message handler exception.
      * @throws ResolverException                Resolver exception.
      */
-    public EntityDescriptor verifySignature(HttpServletRequest request, MessageContext messageContext)
+    public EntityDescriptor verifySignature(final HttpServletRequest request, final MessageContext messageContext)
             throws ComponentInitializationException, MessageHandlerException, ResolverException {
-        SignatureValidationParameters sigValParams = new SignatureValidationParameters();
+        final SignatureValidationParameters sigValParams = new SignatureValidationParameters();
         sigValParams.setSignatureTrustEngine(signatureTrustEngine);
 
-        SignatureSecurityHandler signatureHandler = new SignatureSecurityHandler();
+        final SignatureSecurityHandler signatureHandler = new SignatureSecurityHandler();
         signatureHandler.setHttpServletRequestSupplier(NonnullSupplier.of(request));
         signatureHandler.initialize();
 
@@ -161,7 +161,7 @@ public class SignatureValidationService {
 
         signatureHandler.invoke(messageContext);
 
-        SAMLPeerEntityContext samlPeerEntityContext = messageContext.getSubcontext(SAMLPeerEntityContext.class);
+        final SAMLPeerEntityContext samlPeerEntityContext = messageContext.getSubcontext(SAMLPeerEntityContext.class);
 
         // Unfortunately the SignatureHandler lets messages with no signature or
         // malformed signatures pass.
@@ -171,11 +171,11 @@ public class SignatureValidationService {
             throw new MessageHandlerException("Message not authenticated");
         }
 
-        String entityId = samlPeerEntityContext.getEntityId();
-        CriteriaSet criteriaSet = new CriteriaSet();
+        final String entityId = samlPeerEntityContext.getEntityId();
+        final CriteriaSet criteriaSet = new CriteriaSet();
         assert entityId != null;
         criteriaSet.add(new EntityIdCriterion(entityId));
-        Iterable<EntityDescriptor> descriptorIterable = metadataResolver.resolve(criteriaSet);
+        final Iterable<EntityDescriptor> descriptorIterable = metadataResolver.resolve(criteriaSet);
         if (StreamSupport.stream(descriptorIterable.spliterator(), false).findAny().isPresent()) {
             return descriptorIterable.iterator().next();
         }

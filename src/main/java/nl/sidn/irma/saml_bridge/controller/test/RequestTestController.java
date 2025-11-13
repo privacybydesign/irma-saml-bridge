@@ -54,9 +54,9 @@ public class RequestTestController {
     private final KeyService keyService;
 
     public RequestTestController(
-            ObjectMapper objectMapper,
-            ConfigurationService configurationService,
-            KeyService keyService) {
+            final ObjectMapper objectMapper,
+            final ConfigurationService configurationService,
+            final KeyService keyService) {
         this.objectMapper = objectMapper;
         this.configurationService = configurationService;
         this.keyService = keyService;
@@ -64,39 +64,31 @@ public class RequestTestController {
 
     @GetMapping(value = "")
     public void testRequest(
-            HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
+            final HttpServletRequest request,
+            final HttpServletResponse response) throws IOException {
+        final XMLObjectBuilderFactory factory = XMLObjectProviderRegistrySupport.getBuilderFactory();
 
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AuthnRequestImpl> authnRequestBuilder = (SAMLObjectBuilder<AuthnRequestImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AuthnRequestImpl> authnRequestBuilder = (SAMLObjectBuilder<AuthnRequestImpl>) factory
                 .getBuilder(AuthnRequestImpl.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<IssuerImpl> issuerBuilder = (SAMLObjectBuilder<IssuerImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<IssuerImpl> issuerBuilder = (SAMLObjectBuilder<IssuerImpl>) factory
                 .getBuilder(Issuer.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<Endpoint> endpointBuilder = (SAMLObjectBuilder<Endpoint>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<Endpoint> endpointBuilder = (SAMLObjectBuilder<Endpoint>) factory
                 .getBuilder(AssertionConsumerService.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<NameIDPolicyImpl> nameIDPolicyBuilder = (SAMLObjectBuilder<NameIDPolicyImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<NameIDPolicyImpl> nameIDPolicyBuilder = (SAMLObjectBuilder<NameIDPolicyImpl>) factory
                 .getBuilder(NameIDPolicy.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<AttributeImpl> attributeBuilder = (SAMLObjectBuilder<AttributeImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<AttributeImpl> attributeBuilder = (SAMLObjectBuilder<AttributeImpl>) factory
                 .getBuilder(Attribute.DEFAULT_ELEMENT_NAME);
-        XSStringBuilder attributeValueBuilder = (XSStringBuilder) factory.getBuilder(XSString.TYPE_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<ExtensionsImpl> extensionsBuilder = (SAMLObjectBuilder<ExtensionsImpl>) factory
+        final XSStringBuilder attributeValueBuilder = (XSStringBuilder) factory.getBuilder(XSString.TYPE_NAME);
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<ExtensionsImpl> extensionsBuilder = (SAMLObjectBuilder<ExtensionsImpl>) factory
                 .getBuilder(Extensions.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<RequestedAttributesImpl> requestedAttributesBuilder = (SAMLObjectBuilder<RequestedAttributesImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<RequestedAttributesImpl> requestedAttributesBuilder = (SAMLObjectBuilder<RequestedAttributesImpl>) factory
                 .getBuilder(RequestedAttributes.DEFAULT_ELEMENT_NAME);
-        @SuppressWarnings("unchecked")
-        SAMLObjectBuilder<RequestedAttributeImpl> requestedAttributeBuilder = (SAMLObjectBuilder<RequestedAttributeImpl>) factory
+        @SuppressWarnings("unchecked") final SAMLObjectBuilder<RequestedAttributeImpl> requestedAttributeBuilder = (SAMLObjectBuilder<RequestedAttributeImpl>) factory
                 .getBuilder(RequestedAttribute.DEFAULT_ELEMENT_NAME);
 
-        AuthnRequestImpl authnRequest = authnRequestBuilder.buildObject();
+        final AuthnRequestImpl authnRequest = authnRequestBuilder.buildObject();
 
-        IssuerImpl issuer = issuerBuilder.buildObject();
+        final IssuerImpl issuer = issuerBuilder.buildObject();
 
         if (request.getParameter("fake-issuer") == null) {
             issuer.setValue(this.configurationService.getConfiguration().getIssuerName());
@@ -111,13 +103,13 @@ public class RequestTestController {
 
         authnRequest.setIssueInstant(now);
 
-        String protocol = configurationService.getConfiguration().getProtocol();
-        String hostname = this.configurationService.getConfiguration().getHost();
-        String path = protocol + hostname;
+        final String protocol = configurationService.getConfiguration().getProtocol();
+        final String hostname = this.configurationService.getConfiguration().getHost();
+        final String path = protocol + hostname;
 
         authnRequest.setIssuer(issuer);
 
-        String packedRequest = request.getParameter("request");
+        final String packedRequest = request.getParameter("request");
         String mode = request.getParameter("mode");
 
         if (mode == null) {
@@ -127,7 +119,7 @@ public class RequestTestController {
         if (packedRequest != null) {
             switch (mode) {
                 case "attributes": {
-                    String[] attributes = objectMapper.readValue(packedRequest, String[].class);
+                    final String[] attributes = objectMapper.readValue(packedRequest, String[].class);
 
                     if (attributes.length == 0) {
                         response.setStatus(401);
@@ -136,11 +128,11 @@ public class RequestTestController {
                         return;
                     }
 
-                    Extensions extensions = extensionsBuilder.buildObject();
-                    RequestedAttributesImpl requestedAttributes = requestedAttributesBuilder.buildObject();
+                    final Extensions extensions = extensionsBuilder.buildObject();
+                    final RequestedAttributesImpl requestedAttributes = requestedAttributesBuilder.buildObject();
 
-                    for (String key : attributes) {
-                        RequestedAttributeImpl requestedAttribute = requestedAttributeBuilder.buildObject();
+                    for (final String key : attributes) {
+                        final RequestedAttributeImpl requestedAttribute = requestedAttributeBuilder.buildObject();
                         requestedAttribute.setIsRequired(true);
                         requestedAttribute.setName(key);
                         requestedAttributes.getRequestedAttributes().add(requestedAttribute);
@@ -152,18 +144,18 @@ public class RequestTestController {
                 }
                 case "condiscon-signicat":
                 case "condiscon": {
-                    RequestedAttributeImpl requestedAttribute = requestedAttributeBuilder.buildObject();
+                    final RequestedAttributeImpl requestedAttribute = requestedAttributeBuilder.buildObject();
                     requestedAttribute.setName(mode.equals("condiscon") ? mode : "signicat:param:condiscon");
 
-                    XSString attributeValue = attributeValueBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME,
+                    final XSString attributeValue = attributeValueBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME,
                             XSString.TYPE_NAME);
                     attributeValue.setValue(packedRequest);
 
                     requestedAttribute.getAttributeValues().add(attributeValue);
 
-                    Extensions extensions = extensionsBuilder.buildObject();
+                    final Extensions extensions = extensionsBuilder.buildObject();
 
-                    RequestedAttributesImpl requestedAttributes = requestedAttributesBuilder.buildObject();
+                    final RequestedAttributesImpl requestedAttributes = requestedAttributesBuilder.buildObject();
                     requestedAttributes.getRequestedAttributes().add(requestedAttribute);
 
                     extensions.getUnknownXMLObjects().add(requestedAttributes);
@@ -171,23 +163,23 @@ public class RequestTestController {
                     break;
                 }
                 case "condiscon-nameid": {
-                    NameIDPolicyImpl nameIDPolicy = nameIDPolicyBuilder.buildObject();
+                    final NameIDPolicyImpl nameIDPolicy = nameIDPolicyBuilder.buildObject();
                     nameIDPolicy.setFormat(packedRequest);
 
                     authnRequest.setNameIDPolicy(nameIDPolicy);
                     break;
                 }
                 case "condiscon-attribute": {
-                    Attribute attribute = attributeBuilder.buildObject();
+                    final Attribute attribute = attributeBuilder.buildObject();
                     attribute.setName("condiscon");
 
-                    XSString attributeValue = attributeValueBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME,
+                    final XSString attributeValue = attributeValueBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME,
                             XSString.TYPE_NAME);
                     attributeValue.setValue(packedRequest);
 
                     attribute.getAttributeValues().add(attributeValue);
 
-                    Extensions extensions = extensionsBuilder.buildObject();
+                    final Extensions extensions = extensionsBuilder.buildObject();
                     extensions.getUnknownXMLObjects().add(attribute);
 
                     authnRequest.setExtensions(extensions);
@@ -201,43 +193,44 @@ public class RequestTestController {
             }
         }
 
-        MessageContext messageContext = new MessageContext();
+        final MessageContext messageContext = new MessageContext();
         messageContext.setMessage(authnRequest);
 
         // TODO use separate credential for testing?
-        Credential credential = new BasicX509Credential(
+        final Credential credential = new BasicX509Credential(
                 this.keyService.getSamlCertificate(),
                 this.keyService.getSamlPrivateKey());
 
-        SignatureSigningParameters sigparams = new SignatureSigningParameters();
+        final SignatureSigningParameters sigparams = new SignatureSigningParameters();
         sigparams.setSignatureAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
         sigparams.setSigningCredential(credential);
 
-        SecurityParametersContext secparamContext = messageContext.getSubcontext(SecurityParametersContext.class, true);
+        final SecurityParametersContext secparamContext = messageContext.getSubcontext(SecurityParametersContext.class, true);
         secparamContext.setSignatureSigningParameters(sigparams);
 
-        Endpoint samlEndpoint = endpointBuilder.buildObject();
+        final Endpoint samlEndpoint = endpointBuilder.buildObject();
         samlEndpoint.setLocation(String.format("%s%s/request",
                 path,
                 this.configurationService.getConfiguration().getPostfix()));
 
-        SAMLPeerEntityContext peerEntityContext = messageContext.getSubcontext(SAMLPeerEntityContext.class, true);
-        SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
+        final SAMLPeerEntityContext peerEntityContext = messageContext.getSubcontext(SAMLPeerEntityContext.class, true);
+        final SAMLEndpointContext endpointContext = peerEntityContext.getSubcontext(SAMLEndpointContext.class, true);
         endpointContext.setEndpoint(samlEndpoint);
 
-        HTTPRedirectDeflateEncoder encoder = new HTTPRedirectDeflateEncoder(response);
+        final HTTPRedirectDeflateEncoder encoder = new HTTPRedirectDeflateEncoder(response);
         encoder.setMessageContext(messageContext);
         try {
             encoder.initialize();
-        } catch (ComponentInitializationException e) {
-            e.printStackTrace();
+        } catch (final ComponentInitializationException e) {
+            log.error(e.getMessage(), e);
             return;
         }
 
         try {
             encoder.encode();
-        } catch (MessageEncodingException e) {
-            e.printStackTrace();
+            System.out.println("Redirecting to SAML Bridge...");
+        } catch (final MessageEncodingException e) {
+            log.error(e.getMessage(), e);
         }
     }
 }

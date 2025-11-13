@@ -45,6 +45,7 @@ import org.opensaml.saml.common.messaging.context.SAMLBindingContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,6 +60,7 @@ import java.util.zip.InflaterInputStream;
  * <p>
  * This decoder only supports DEFLATE compression.
  */
+@Service
 public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
 
     /**

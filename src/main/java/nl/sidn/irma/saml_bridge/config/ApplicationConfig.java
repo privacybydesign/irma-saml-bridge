@@ -27,7 +27,7 @@ public class ApplicationConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -36,7 +36,7 @@ public class ApplicationConfig {
 
     @Bean
     public RestTemplate restTemplate() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient());
         return new RestTemplate(requestFactory);
     }
@@ -44,9 +44,9 @@ public class ApplicationConfig {
     // TODO: this bean can be used eventually in IRMA-2883
     @Bean
     public HttpClient httpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+        final TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        SSLContext sslContext = SSLContexts.custom()
+        final SSLContext sslContext = SSLContexts.custom()
                 .setProtocol("TLSv1.3")
                 .loadTrustMaterial(null, acceptingTrustStrategy)
                 .build();

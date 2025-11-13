@@ -32,12 +32,12 @@ public class KeyReader {
      * @throws InvalidKeySpecException  The invalid key spec exception is thrown when the key is malformed.
      * @throws NoSuchAlgorithmException The no such algorithm exception is thrown when the RSA algorithm is not supported.
      */
-    public RSAPrivateKey getPrivate(String path)
+    public RSAPrivateKey getPrivate(final String path)
             throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+        final byte[] keyBytes = Files.readAllBytes(Paths.get(path));
 
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
+        final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        final KeyFactory kf = KeyFactory.getInstance("RSA");
         return (RSAPrivateKey) kf.generatePrivate(spec);
     }
 
@@ -50,12 +50,12 @@ public class KeyReader {
      * @throws InvalidKeySpecException  The invalid key spec exception is thrown when the key is malformed.
      * @throws NoSuchAlgorithmException The no such algorithm exception is thrown when the RSA algorithm is not supported.
      */
-    public RSAPublicKey getPublic(String path)
+    public RSAPublicKey getPublic(final String path)
             throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+        final byte[] keyBytes = Files.readAllBytes(Paths.get(path));
 
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
+        final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        final KeyFactory kf = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) kf.generatePublic(spec);
     }
 
@@ -67,8 +67,8 @@ public class KeyReader {
      * @throws IOException          The IO exception is thrown when the file could not be read.
      * @throws CertificateException The certificate exception is thrown when the certificate is malformed.
      */
-    public X509Certificate getCertificate(String path) throws IOException, CertificateException {
-        byte[] bytes = Files.readAllBytes(Paths.get(path));
+    public X509Certificate getCertificate(final String path) throws IOException, CertificateException {
+        final byte[] bytes = Files.readAllBytes(Paths.get(path));
         return X509Support.decodeCertificate(bytes);
     }
 }

@@ -19,34 +19,33 @@ import java.security.cert.CertificateEncodingException;
 public class MetadataController {
     private final OpenSamlService openSamlService;
 
-    public MetadataController(
-            OpenSamlService openSamlService) {
+    public MetadataController(final OpenSamlService openSamlService) {
         this.openSamlService = openSamlService;
     }
 
     @GetMapping(value = "")
-    public void metadata(HttpServletResponse response) throws IOException {
+    public void metadata(final HttpServletResponse response) throws IOException {
         // Default to Internal Server Error
         response.setStatus(500);
 
-        EntityDescriptor metadata;
+        final EntityDescriptor metadata;
         try {
             metadata = openSamlService.createIdPMetadata();
-        } catch (CertificateEncodingException e) {
+        } catch (final CertificateEncodingException e) {
             log.error("action=\"metadata-flow.create-idp-metadata\", error=\"Failed to emit certificate\"", e);
             response.getWriter().write("Failed to emit certificate");
             return;
         }
 
-        String samlResponse;
+        final String samlResponse;
         try {
             samlResponse = openSamlService.marshallMetadata(metadata);
 
-        } catch (MarshallingException e) {
+        } catch (final MarshallingException e) {
             log.error("action=\"metadata-flow.marshall-metadata\", error=\"Failed to marshall assertion\"", e);
             response.getWriter().write("Failed to marshall assertion");
             return;
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             log.error("action=\"metadata-flow.marshall-metadata\", error=\"Failed to write assertion\"", e);
             response.getWriter().write("Failed to write assertion");
             return;

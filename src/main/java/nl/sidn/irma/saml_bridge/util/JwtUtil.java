@@ -19,21 +19,21 @@ public class JwtUtil {
     private final KeyService keyService;
 
     public JwtUtil(
-            ConfigurationService configurationService,
-            KeyService keyService
+            final ConfigurationService configurationService,
+            final KeyService keyService
     ) {
         this.configurationService = configurationService;
         this.keyService = keyService;
     }
 
-    public Jws<Claims> getClaims(PublicKey key, String jwt) {
+    public Jws<Claims> getClaims(final PublicKey key, final String jwt) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(jwt);
     }
 
-    public String createJwtToken(String subject, String claimName, Object claim) {
+    public String createJwtToken(final String subject, final String claimName, final Object claim) {
         return Jwts.builder()
                 .issuedAt(Date.from(Instant.now()))
                 .issuer(this.configurationService.getConfiguration().getIssuerName())
@@ -43,7 +43,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createTestIrmaJwtTokenWithClaims(String issuer, String subject, Map<String, Object> claims) {
+    public String createTestIrmaJwtTokenWithClaims(final String issuer, final String subject, final Map<String, Object> claims) {
         return Jwts.builder()
                 .issuedAt(Date.from(Instant.now()))
                 .issuer(issuer)

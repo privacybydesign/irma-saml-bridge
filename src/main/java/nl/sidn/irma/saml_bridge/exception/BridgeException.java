@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatusCode;
 public class BridgeException extends Exception {
     private final HttpStatusCode httpStatusCode;
 
-    public BridgeException(HttpStatusCode httpStatusCode, String message) {
+    public BridgeException(final HttpStatusCode httpStatusCode, final String message) {
         super(message);
         this.httpStatusCode = httpStatusCode;
     }
