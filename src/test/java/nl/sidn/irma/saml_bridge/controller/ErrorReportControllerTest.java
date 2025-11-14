@@ -127,10 +127,6 @@ class ErrorReportControllerTest {
         final String rawSource = "app/ui.js\r\npath\t\u0000\u007F";
         final String rawMessage = "TypeError:\nfoo() is not a function\r\n\tat line 12\u0000";
 
-        // Expected sanitization: all control chars replaced by a single space
-        final String expectedSource = "app/ui.js path  ";
-        final String expectedMessage = "TypeError: foo() is not a function  at line 12 ";
-
         final ClientError ce = new ClientError();
         setField(ce, "source", rawSource);
         setField(ce, "lineno", 12);
