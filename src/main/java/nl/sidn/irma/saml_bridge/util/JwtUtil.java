@@ -7,12 +7,10 @@ import nl.sidn.irma.saml_bridge.service.ConfigurationService;
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import java.security.PublicKey;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.Map;
-
-import static io.jsonwebtoken.Jwts.parserBuilder;
 
 @Service
 public class JwtUtil {
@@ -21,37 +19,37 @@ public class JwtUtil {
     private final KeyService keyService;
 
     public JwtUtil(
-            ConfigurationService configurationService,
-            KeyService keyService
+            final ConfigurationService configurationService,
+            final KeyService keyService
     ) {
         this.configurationService = configurationService;
         this.keyService = keyService;
     }
 
-    public Jws<Claims> getClaims(Key key, String claims) {
-        return parserBuilder()
-                .setSigningKey(key)
+    public Jws<Claims> getClaims(final PublicKey key, final String jwt) {
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(claims);
+                .parseSignedClaims(jwt);
     }
 
-    public String createJwtToken(String subject, String claimName, Object claim) {
+    public String createJwtToken(final String subject, final String claimName, final Object claim) {
         return Jwts.builder()
-                .setIssuedAt(Date.from(Instant.now()))
-                .setIssuer(this.configurationService.getConfiguration().getIssuerName())
-                .setSubject(subject)
+                .issuedAt(Date.from(Instant.now()))
+                .issuer(this.configurationService.getConfiguration().getIssuerName())
+                .subject(subject)
                 .signWith(this.keyService.getJwtPrivateKey())
                 .claim(claimName, claim)
                 .compact();
     }
 
-    public String createTestIrmaJwtTokenWithClaims(String issuer, String subject, Map<String, Object> claims) {
+    public String createTestIrmaJwtTokenWithClaims(final String issuer, final String subject, final Map<String, Object> claims) {
         return Jwts.builder()
-                .setIssuedAt(Date.from(Instant.now()))
-                .setIssuer(issuer)
-                .setSubject(subject)
+                .issuedAt(Date.from(Instant.now()))
+                .issuer(issuer)
+                .subject(subject)
                 .signWith(this.keyService.getTestIrmaPrivateKey())
-                .setClaims(claims)
+                .claims(claims)
                 .compact();
     }
 }

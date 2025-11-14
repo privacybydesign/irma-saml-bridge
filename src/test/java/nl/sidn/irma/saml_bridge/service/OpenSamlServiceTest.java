@@ -3,6 +3,7 @@ package nl.sidn.irma.saml_bridge.service;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.Disclosure;
+import nl.sidn.irma.saml_bridge.model.RequestError;
 import nl.sidn.irma.saml_bridge.model.ResultStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,49 +47,49 @@ class OpenSamlServiceTest {
 
     @Test
     void createAssertionResponseTestResultStatusIsSUCCESS() {
-        AssertParameters assertParameters = assertParameters();
-        Disclosure disclosureMock = disclosure();
-        Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.SUCCESS);
+        final AssertParameters assertParameters = assertParameters();
+        final Disclosure disclosureMock = disclosure();
+        final Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.SUCCESS);
         assertNotNull(response);
     }
 
     @Test
     void createAssertionResponseTestResultStatusIsFAILED() {
-        AssertParameters assertParameters = assertParameters();
-        Disclosure disclosureMock = disclosure();
-        Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.FAILED);
+        final AssertParameters assertParameters = assertParameters();
+        final RequestError requestError = new RequestError();
+        requestError.setMessage("test");
+        assertParameters.setRequestError(requestError);
+
+        final Disclosure disclosureMock = disclosure();
+        final Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.FAILED);
         assertNotNull(response);
     }
 
     @Test
     void createAssertionResponseTestNoDisclosureAttributes() {
-        AssertParameters assertParameters = assertParameters();
-        Disclosure disclosureMock = disclosure(disclosure -> {
-            disclosure.setAttributes(Collections.emptyMap());
-        });
-        Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.SUCCESS);
+        final AssertParameters assertParameters = assertParameters();
+        final Disclosure disclosureMock = disclosure(disclosure -> disclosure.setAttributes(Collections.emptyMap()));
+        final Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.SUCCESS);
         assertNotNull(response);
     }
 
     @Test
     void createAssertionResponseTestWhenDisclosureTokenIsNull() {
-        AssertParameters assertParameters = assertParameters();
-        Disclosure disclosureMock = disclosure(disclosure -> {
-            disclosure.setToken(null);
-        });
-        Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.SUCCESS);
+        final AssertParameters assertParameters = assertParameters();
+        final Disclosure disclosureMock = disclosure(disclosure -> disclosure.setToken(null));
+        final Response response = openSamlService.createAssertionResponse(assertParameters, disclosureMock, ResultStatus.SUCCESS);
         assertNotNull(response);
     }
 
     @Test
     void createIdPMetadataTest() throws CertificateEncodingException {
-        EntityDescriptor entityDescriptor = openSamlService.createIdPMetadata();
+        final EntityDescriptor entityDescriptor = openSamlService.createIdPMetadata();
         assertNotNull(entityDescriptor);
     }
 
     @Test
     void createSPMetadataTest() throws CertificateEncodingException {
-        EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
+        final EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
         assertNotNull(entityDescriptor);
     }
 

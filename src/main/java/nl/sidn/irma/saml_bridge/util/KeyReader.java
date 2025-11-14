@@ -18,57 +18,57 @@ import java.security.spec.X509EncodedKeySpec;
 
 /**
  * Utility class to read key material in various formats from disk.
- * 
+ * <p>
  * See the README.md file on how to generate any of these files.
  */
 @Service
 public class KeyReader {
-	/**
-	 * Read a RSA private key in PKCS8 DER format from disk.
-	 * 
-	 * @param path
-	 * @return A properly read RSAPrivateKey.
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException
-	 */
-	public RSAPrivateKey getPrivate(String path)
-			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+    /**
+     * Read a RSA private key in PKCS8 DER format from disk.
+     *
+     * @param path The path to the key file.
+     * @return A properly read RSAPrivateKey.
+     * @throws IOException              The IO exception is thrown when the file could not be read.
+     * @throws InvalidKeySpecException  The invalid key spec exception is thrown when the key is malformed.
+     * @throws NoSuchAlgorithmException The no such algorithm exception is thrown when the RSA algorithm is not supported.
+     */
+    public RSAPrivateKey getPrivate(final String path)
+            throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+        final byte[] keyBytes = Files.readAllBytes(Paths.get(path));
 
-		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-		KeyFactory kf = KeyFactory.getInstance("RSA");
-		return (RSAPrivateKey) kf.generatePrivate(spec);
-	}
+        final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        final KeyFactory kf = KeyFactory.getInstance("RSA");
+        return (RSAPrivateKey) kf.generatePrivate(spec);
+    }
 
-	/**
-	 * Read a RSA public key in PKCS8 DER format from disk.
-	 * 
-	 * @param path
-	 * @return A properly read RSAPrivateKey.
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException
-	 */
-	public RSAPublicKey getPublic(String path)
-			throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+    /**
+     * Read a RSA public key in PKCS8 DER format from disk.
+     *
+     * @param path The path to the key file.
+     * @return A properly read RSAPrivateKey.
+     * @throws IOException              The IO exception is thrown when the file could not be read.
+     * @throws InvalidKeySpecException  The invalid key spec exception is thrown when the key is malformed.
+     * @throws NoSuchAlgorithmException The no such algorithm exception is thrown when the RSA algorithm is not supported.
+     */
+    public RSAPublicKey getPublic(final String path)
+            throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+        final byte[] keyBytes = Files.readAllBytes(Paths.get(path));
 
-		X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-		KeyFactory kf = KeyFactory.getInstance("RSA");
-		return (RSAPublicKey) kf.generatePublic(spec);
-	}
-	
-	/**
-	 * Read a RSA certificate in X509 CRT format from disk.
-	 * 
-	 * @param path
-	 * @return A properly read RSAPrivateKey.
-	 * @throws IOException
-	 * @throws CertificateException 
-	 */
-	public X509Certificate getCertificate(String path) throws IOException, CertificateException {
-		byte[] bytes = Files.readAllBytes(Paths.get(path));
-		return X509Support.decodeCertificate(bytes);
-	}
+        final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        final KeyFactory kf = KeyFactory.getInstance("RSA");
+        return (RSAPublicKey) kf.generatePublic(spec);
+    }
+
+    /**
+     * Read a RSA certificate in X509 CRT format from disk.
+     *
+     * @param path The path to the certificate file.
+     * @return A properly read RSAPrivateKey.
+     * @throws IOException          The IO exception is thrown when the file could not be read.
+     * @throws CertificateException The certificate exception is thrown when the certificate is malformed.
+     */
+    public X509Certificate getCertificate(final String path) throws IOException, CertificateException {
+        final byte[] bytes = Files.readAllBytes(Paths.get(path));
+        return X509Support.decodeCertificate(bytes);
+    }
 }

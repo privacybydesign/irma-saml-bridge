@@ -41,27 +41,26 @@ class RedirectInstructionServiceTest {
     }
 
     @Test
-    void createTest() throws BridgeException, MarshallingException, SecurityException, CertificateEncodingException, SignatureException, TransformerException, XMLParserException, UnmarshallingException {
-        AssertParameters assertParameters = assertParameters();
-        Disclosure disclosure = disclosure();
+    void createTest() throws BridgeException, MarshallingException, CertificateEncodingException, SignatureException, TransformerException, XMLParserException, UnmarshallingException {
+        final AssertParameters assertParameters = assertParameters();
+        final Disclosure disclosure = disclosure();
 
         when(openSamlService.createAssertionResponse(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(mock(Response.class));
         when(openSamlService.marshallResponse(any(Response.class))).thenReturn("saml response");
         doNothing().when(openSamlService).verifyAssertionResponse(anyString());
-        RedirectInstruction redirectInstruction = redirectInstructionService.create(assertParameters, disclosure, ResultStatus.SUCCESS);
+        final RedirectInstruction redirectInstruction = redirectInstructionService.create(assertParameters, disclosure, ResultStatus.SUCCESS);
         assertNotNull(redirectInstruction);
     }
 
     @Test
-    void createTestExceptions() throws BridgeException, MarshallingException, SecurityException, CertificateEncodingException, SignatureException, TransformerException, XMLParserException, UnmarshallingException {
-        AssertParameters assertParameters = assertParameters();
-        Disclosure disclosure = disclosure();
+    void createTestExceptions() throws MarshallingException, CertificateEncodingException, SignatureException, TransformerException, XMLParserException, UnmarshallingException {
+        final AssertParameters assertParameters = assertParameters();
+        final Disclosure disclosure = disclosure();
 
         when(openSamlService.createAssertionResponse(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(mock(Response.class));
 
         //MarshallingException
         when(openSamlService.marshallResponse(any(Response.class))).thenThrow(mock(MarshallingException.class));
-        //doNothing().when(openSamlService).verifyAssertionResponse(anyString());
         BridgeException bridgeException = assertThrows(BridgeException.class, () -> redirectInstructionService.create(assertParameters, disclosure, ResultStatus.SUCCESS));
         assertEquals("Failed to marshall assertion", bridgeException.getMessage());
 

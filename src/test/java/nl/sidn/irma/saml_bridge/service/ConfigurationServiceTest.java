@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
@@ -19,14 +17,14 @@ class ConfigurationServiceTest {
     ConfigurationService configurationService;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         objectMapper = new ObjectMapper();
         configurationService = new ConfigurationService(objectMapper);
     }
 
     @Test
-    void getConfigurationTest() throws IOException {
-        Configuration configuration = configurationService.getConfiguration();
+    void getConfigurationTest() {
+        final Configuration configuration = configurationService.getConfiguration();
         assertNotNull(configuration);
     }
 

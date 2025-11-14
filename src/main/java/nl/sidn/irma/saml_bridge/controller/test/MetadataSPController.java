@@ -24,31 +24,31 @@ public class MetadataSPController {
     private final OpenSamlService openSamlService;
 
     public MetadataSPController(
-            OpenSamlService openSamlService) {
+            final OpenSamlService openSamlService) {
         this.openSamlService = openSamlService;
     }
 
     @GetMapping(value = "")
     public void testMetadata(
-            HttpServletResponse response) throws IOException {
+            final HttpServletResponse response) throws IOException {
         // Default to Internal Server Error
         response.setStatus(500);
 
-        EntityDescriptor metadata;
+        final EntityDescriptor metadata;
         try {
             metadata = this.openSamlService.createSPMetadata();
-        } catch (CertificateEncodingException e) {
+        } catch (final CertificateEncodingException e) {
             log.error("Failed to emit certificate", e);
             return;
         }
 
-        String samlResponse;
+        final String samlResponse;
         try {
             samlResponse = this.openSamlService.marshallMetadata(metadata);
-        } catch (MarshallingException e) {
+        } catch (final MarshallingException e) {
             log.error("Failed to marhshall assertion", e);
             return;
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             log.error("Failed to write assertion", e);
             return;
         }

@@ -3,7 +3,7 @@
  * API instead of the javax servlet API.
  *
  * The original license is included below.
- * 
+ *
  * Licensed to the University Corporation for Advanced Internet Development,
  * Inc. (UCAID) under one or more contributor license agreements.  See the
  * NOTICE file distributed with this work for additional information regarding
@@ -22,23 +22,14 @@
 
 package nl.sidn.irma.saml_bridge.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import com.google.common.base.Strings;
 import jakarta.servlet.http.HttpServletRequest;
-
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -54,17 +45,27 @@ import org.opensaml.saml.common.messaging.context.SAMLBindingContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import com.google.common.base.Strings;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 /**
  * SAML 2.0 HTTP Redirect decoder using the DEFLATE encoding method.
- * 
+ * <p>
  * This decoder only supports DEFLATE compression.
  */
+@Service
 public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     @Nonnull
     private final Logger log = LoggerFactory.getLogger(HTTPRedirectDeflateDecoder.class);
 
@@ -80,17 +81,25 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
      */
     private HttpServletRequest httpServletRequest;
 
-    /** Parser pool used to deserialize the message. */
+    /**
+     * Parser pool used to deserialize the message.
+     */
     @Nonnull
     private ParserPool parserPool;
 
-    /** Message context. */
+    /**
+     * Message context.
+     */
     private MessageContext messageContext;
 
-    /** Whether the decoder is initialized */
+    /**
+     * Whether the decoder is initialized
+     */
     private boolean isInitialized;
 
-    /** Whether the decoder is destroyed */
+    /**
+     * Whether the decoder is destroyed
+     */
     private boolean isDestroyed;
 
     /**
@@ -100,9 +109,12 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
         parserPool = XMLObjectProviderRegistrySupport.getParserPool();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Nonnull
     @NotEmpty
+    @Override
     public String getBindingURI() {
         return SAMLConstants.SAML2_REDIRECT_BINDING_URI;
     }
@@ -110,7 +122,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
     /**
      * Get an optional {@link BindingDescriptor} to inject into
      * {@link SAMLBindingContext} created.
-     * 
+     *
      * @return binding descriptor
      */
     @Nullable
@@ -121,7 +133,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
     /**
      * Set an optional {@link BindingDescriptor} to inject into
      * {@link SAMLBindingContext} created.
-     * 
+     *
      * @param descriptor a binding descriptor
      */
     public void setBindingDescriptor(@Nullable final BindingDescriptor descriptor) {
@@ -130,7 +142,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
 
     /**
      * Get the HTTPServletRequest used to retrieve the message to be decoded.
-     * 
+     *
      * @return the HTTPServletRequest used to retrieve the message to be decoded
      */
     @Nonnull
@@ -140,7 +152,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
 
     /**
      * Set the HTTPServletRequest used to retrieve the message to be decoded.
-     * 
+     *
      * @param request the HTTPServletRequest used to retrieve the message to be
      *                decoded
      */
@@ -148,7 +160,10 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
         httpServletRequest = request;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void decode() throws MessageDecodingException {
         final MessageContext msgContext = new MessageContext();
 
@@ -190,22 +205,16 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
     /**
      * Helper method that deserializes and unmarshalls the message from the given
      * stream.
-     * 
+     *
      * @param messageStream input stream containing the message
-     * 
      * @return the inbound message
-     * 
      * @throws MessageDecodingException thrown if there is a problem deserializing
      *                                  and unmarshalling the message
      */
     private XMLObject unmarshallMessage(final InputStream messageStream) throws MessageDecodingException {
         try {
-            final XMLObject message = XMLObjectSupport.unmarshallFromInputStream(parserPool, messageStream);
-            return message;
-        } catch (final XMLParserException e) {
-            log.error("Error unmarshalling message from input stream: {}", e.getMessage());
-            throw new MessageDecodingException("Error unmarshalling message from input stream", e);
-        } catch (final UnmarshallingException e) {
+            return XMLObjectSupport.unmarshallFromInputStream(parserPool, messageStream);
+        } catch (final XMLParserException | UnmarshallingException e) {
             log.error("Error unmarshalling message from input stream: {}", e.getMessage());
             throw new MessageDecodingException("Error unmarshalling message from input stream", e);
         }
@@ -213,11 +222,9 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
 
     /**
      * Base64 decodes the SAML message and then decompresses the message.
-     * 
+     *
      * @param message Base64 encoded, DEFALTE compressed, SAML message
-     * 
      * @return the SAML message
-     * 
      * @throws MessageDecodingException thrown if the message can not be decoded
      */
     protected InputStream decodeMessage(final String message) throws MessageDecodingException {
@@ -234,7 +241,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
 
     /**
      * Populate the context which carries information specific to this binding.
-     * 
+     *
      * @param messageContext the current message context
      */
     protected void populateBindingContext(final MessageContext messageContext) {
@@ -251,7 +258,7 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
      * {@link Inflater} instance and
      * closes it when the stream is closed.
      */
-    private class NoWrapAutoEndInflaterInputStream extends InflaterInputStream {
+    private static class NoWrapAutoEndInflaterInputStream extends InflaterInputStream {
 
         /**
          * Creates a new input stream with a default no-wrap decompressor and buffer
@@ -263,7 +270,10 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
             super(is, new Inflater(true));
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public void close() throws IOException {
             if (inf != null) {
                 inf.end();
@@ -287,9 +297,6 @@ public class HTTPRedirectDeflateDecoder implements SAMLMessageDecoder {
     public void initialize() throws ComponentInitializationException {
         if (httpServletRequest == null) {
             throw new ComponentInitializationException("HTTP Servlet request cannot be null");
-        }
-        if (parserPool == null) {
-            throw new ComponentInitializationException("Parser pool cannot be null");
         }
         isInitialized = true;
     }

@@ -3,6 +3,8 @@ package nl.sidn.irma.saml_bridge.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.*;
@@ -15,8 +17,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
@@ -32,12 +32,7 @@ public class ErrorAssertController {
 
     private final RedirectInstructionService redirectInstructionService;
 
-    public ErrorAssertController(
-            ObjectMapper objectMapper,
-            KeyService keyService,
-            JwtUtil jwtUtil,
-            RedirectInstructionService redirectInstructionService
-    ) {
+    public ErrorAssertController(final ObjectMapper objectMapper, final KeyService keyService, final JwtUtil jwtUtil, final RedirectInstructionService redirectInstructionService) {
         this.objectMapper = objectMapper;
         this.keyService = keyService;
         this.jwtUtil = jwtUtil;
@@ -46,14 +41,13 @@ public class ErrorAssertController {
 
     /**
      * Endpoint, who handles a general error from the frontend
-     * @param request
-     * @param response
-     * @throws IOException
+     *
+     * @param request  The HTTP request.
+     * @param response The HTTP response.
+     * @throws IOException The exception is thrown when something goes wrong during IO.
      */
-    @PostMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void error(
-            HttpServletRequest request,
-            HttpServletResponse response
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void error(final HttpServletRequest request, final HttpServletResponse response
 
     ) throws IOException {
         handleError(request, response, null);
@@ -61,52 +55,41 @@ public class ErrorAssertController {
 
     /**
      * Endpoint, who handles the abort from the frontend
-     * @param request
-     * @param response
-     * @throws IOException
+     *
+     * @param request  The HTTP request.
+     * @param response The HTTP response.
+     * @throws IOException The exception is thrown when something goes wrong during IO.
      */
-    @PostMapping(value="/abort", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void errorAbort(
-            HttpServletRequest request,
-            HttpServletResponse response
+    @PostMapping(value = "/abort", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void errorAbort(final HttpServletRequest request, final HttpServletResponse response
 
     ) throws IOException {
-        handleError(request, response, RequestError.builder()
-                .statusCode(HttpStatus.BAD_REQUEST.value())
-                .message("The user cancelled.")
-                .build());
+        handleError(request, response, RequestError.builder().statusCode(HttpStatus.BAD_REQUEST.value()).message("The user cancelled.").build());
     }
 
-    private void handleError(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            RequestError requestError
-    ) throws IOException {
+    private void handleError(final HttpServletRequest request, final HttpServletResponse response, final RequestError requestError) throws IOException {
         // We receive a JSON POST body, and parse it.
-        AssertRequest assertRequest = objectMapper.readValue(request.getReader(), AssertRequest.class);
+        final AssertRequest assertRequest = objectMapper.readValue(request.getReader(), AssertRequest.class);
 
         // Decode our pre-prepared set of assertion parameters.
-        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPrivateKey(), assertRequest.getParameters());
+        final Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPublicKey(), assertRequest.getParameters());
 
         // Unpack the Assertion parameters.
-        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getBody());
-        if(requestError != null) {
+        final AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
+        if (requestError != null) {
             assertParameters.setRequestError(requestError);
         }
 
         //something went wrong in the frontend, we don't have a specific error
-        if(assertParameters.getRequestError() == null) {
-            assertParameters.setRequestError(RequestError.builder()
-                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                    .message("Something went wrong in the frontend")
-                    .build());
+        if (assertParameters.getRequestError() == null) {
+            assertParameters.setRequestError(RequestError.builder().statusCode(HttpStatus.BAD_REQUEST.value()).message("Something went wrong in the frontend").build());
         }
 
         // Construct the set of instructions to the React applet.
-        RedirectInstruction ri;
+        final RedirectInstruction ri;
         try {
             ri = this.redirectInstructionService.create(assertParameters, ResultStatus.FAILED);
-        } catch (BridgeException e) {
+        } catch (final BridgeException e) {
             response.setStatus(e.getHttpStatusCode());
             response.getWriter().write(e.getMessage());
             return;

@@ -5,7 +5,10 @@ import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.codec.EncodingException;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
-import nl.sidn.irma.saml_bridge.model.*;
+import nl.sidn.irma.saml_bridge.model.AssertParameters;
+import nl.sidn.irma.saml_bridge.model.Disclosure;
+import nl.sidn.irma.saml_bridge.model.RedirectInstruction;
+import nl.sidn.irma.saml_bridge.model.ResultStatus;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.saml.saml2.core.Response;
@@ -23,63 +26,63 @@ import java.security.cert.CertificateEncodingException;
 @Slf4j
 @Service
 public class RedirectInstructionService {
-	private final OpenSamlService openSamlService;
+    private final OpenSamlService openSamlService;
 
-	public RedirectInstructionService(
-			OpenSamlService openSamlService
-	) {
-		this.openSamlService = openSamlService;
-	}
+    public RedirectInstructionService(
+            final OpenSamlService openSamlService
+    ) {
+        this.openSamlService = openSamlService;
+    }
 
-	public RedirectInstruction create(AssertParameters assertParameters, ResultStatus status) throws BridgeException {
-		return create(assertParameters, null, status);
-	}
+    public RedirectInstruction create(final AssertParameters assertParameters, final ResultStatus status) throws BridgeException {
+        return create(assertParameters, null, status);
+    }
 
-	/**
-	 * @param assertParameters The assertion parameters this redirect instruction is intended for.
-	 * @param disclosure May be null in case status is not SUCCESS.
-	 * @param status The status that should be returned as part of this response.
-	 * @return A properly populated return instruction.
-	 * @throws BridgeException
-	 */
-	public RedirectInstruction create(AssertParameters assertParameters, Disclosure disclosure, ResultStatus status) throws BridgeException {
-		// Create a SAML assertion.
-		Response assertion = this.openSamlService.createAssertionResponse(assertParameters, disclosure, status);
+    /**
+     * @param assertParameters The assertion parameters this redirect instruction is intended for.
+     * @param disclosure       May be null in case status is not SUCCESS.
+     * @param status           The status that should be returned as part of this response.
+     * @return A properly populated return instruction.
+     * @throws BridgeException The bridge exception is thrown when something goes wrong during the creation of the redirect instruction.
+     */
+    public RedirectInstruction create(final AssertParameters assertParameters, final Disclosure disclosure, final ResultStatus status) throws BridgeException {
+        // Create a SAML assertion.
+        final Response assertion = this.openSamlService.createAssertionResponse(assertParameters, disclosure, status);
 
-		// Encode that SAML assertion as a signed XML response.
-		String samlResponse;
-		try {
-			samlResponse = this.openSamlService.marshallResponse(assertion);
-		} catch (MarshallingException e) {
-			log.error("action=\"redirectinstruction.create\", error=\"Failed to marshall assertion\"", e);
-			throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to marshall assertion");
-		} catch (TransformerException e) {
-			log.error("action=\"redirectinstruction.create\", error=\"Failed to write assertion\"", e);
-			throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write assertion");
-		} catch (SignatureException | CertificateEncodingException e) {
-			// Something was misconfigured with the private key for signing.
-			log.error("action=\"redirectinstruction.create\", error=\"Failed to write signature\"", e);
-			throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write signature");
-		}
+        // Encode that SAML assertion as a signed XML response.
+        final String samlResponse;
+        try {
+            samlResponse = this.openSamlService.marshallResponse(assertion);
+        } catch (final MarshallingException e) {
+            log.error("action=\"redirectinstruction.create\", error=\"Failed to marshall assertion\"", e);
+            throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to marshall assertion");
+        } catch (final TransformerException e) {
+            log.error("action=\"redirectinstruction.create\", error=\"Failed to write assertion\"", e);
+            throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write assertion");
+        } catch (final SignatureException | CertificateEncodingException e) {
+            // Something was misconfigured with the private key for signing.
+            log.error("action=\"redirectinstruction.create\", error=\"Failed to write signature\"", e);
+            throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write signature");
+        }
 
-		// For debugging we always validate our own signature, but continue when it is invalid.
-		try {
-			this.openSamlService.verifyAssertionResponse(samlResponse);
-		} catch (SignatureException | XMLParserException | UnmarshallingException e) {
-			log.error("action=\"redirectinstruction.create\", error=\"Failed to validate signature or format of our assertion\"", e);
-			throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to validate signature or format of our assertion");
-		}
+        // For debugging we always validate our own signature, but continue when it is invalid.
+        try {
+            this.openSamlService.verifyAssertionResponse(samlResponse);
+        } catch (final SignatureException | XMLParserException | UnmarshallingException e) {
+            log.error("action=\"redirectinstruction.create\", error=\"Failed to validate signature or format of our assertion\"", e);
+            throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to validate signature or format of our assertion");
+        }
 
-		// Construct the set of instructions to the React applet.
-		try {
-			return RedirectInstruction.builder()
-					.samlResponse(Base64Support.encode(samlResponse.getBytes(), false))
-					.serviceUrl(assertParameters.getServiceUrl())
-					.relayState(assertParameters.getRelayState())
-					.build();
-		} catch (EncodingException e) {
-			throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed with encoding issue: " + e.getMessage());
-		}
+        // Construct the set of instructions to the React applet.
+        try {
+            return RedirectInstruction.builder()
+                    .samlResponse(Base64Support.encode(samlResponse.getBytes(), false))
+                    .serviceUrl(assertParameters.getServiceUrl())
+                    .relayState(assertParameters.getRelayState())
+                    .build();
+        } catch (final EncodingException e) {
+            throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed with encoding issue: " + e.getMessage());
+        }
 
-	}
+    }
 }

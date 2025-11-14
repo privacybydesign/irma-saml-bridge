@@ -9,21 +9,21 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
-public class IrmaService {
+public class  IrmaService {
 
     private static final String LOG_MESSAGE = "action=\"request-flow\", warning=\"Error with http status {} - during IRMA start session: {}\"";
 
     private final RestTemplate restTemplate;
 
     public IrmaService(
-            RestTemplate restTemplate
+            final RestTemplate restTemplate
     ) {
         this.restTemplate = restTemplate;
     }
 
-    public String startSession(String token, String host) throws BridgeException {
+    public String startSession(final String token, final String host) throws BridgeException {
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
+            final ResponseEntity<String> response = restTemplate.exchange(
                     host + "/session",
                     HttpMethod.POST,
                     new HttpEntity<>(token, getRequestHeader()),
@@ -32,10 +32,10 @@ public class IrmaService {
                 return response.getBody();
             }
 
-        } catch (HttpClientErrorException e) {
+        } catch (final HttpClientErrorException e) {
             log.error(LOG_MESSAGE, e.getStatusCode().value(), e.getMessage());
             throw new BridgeException(e.getStatusCode(), e.getMessage());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error(LOG_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             throw new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong when trying to connect with the IRMA server");
         }
@@ -44,7 +44,7 @@ public class IrmaService {
     }
 
     HttpHeaders getRequestHeader() {
-        HttpHeaders headers = new HttpHeaders();
+        final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
         return headers;
     }

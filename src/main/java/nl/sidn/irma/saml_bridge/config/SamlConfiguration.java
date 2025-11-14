@@ -11,7 +11,7 @@ public class SamlConfiguration {
 
     @Bean
     public ParserPool parserPool() throws ComponentInitializationException {
-        BasicParserPool basicParserPool = new BasicParserPool();
+        final BasicParserPool basicParserPool = new BasicParserPool();
         basicParserPool.setMaxPoolSize(100);
         basicParserPool.setCoalescing(true);
         basicParserPool.setIgnoreComments(true);

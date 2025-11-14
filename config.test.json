@@ -3,6 +3,7 @@
 	"host": "localhost:8080",
 	"postfix": "/irma-saml-bridge",
 	"jwtPrivateKeyPath": "./dev-keys/jwt.der",
+    "jwtPublicKeyPath": "./dev-keys/jwt.pub.der",
 	"testIrmaPrivateKeyPath": "./dev-keys/irma-test.der",
 	"irmaPublicKeyPath": "./dev-keys/irma-test.pub.der",
 	"samlCertificatePath": "./dev-keys/idp.crt",

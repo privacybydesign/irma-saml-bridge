@@ -7,15 +7,23 @@ import lombok.Data;
  */
 @Data
 public class ClientError {
-	/** The javascript error as a text message. */
-	private String message;
+    /**
+     * The javascript error as a text message.
+     */
+    private String message;
 
-	/** The source file the client side code was executing when the error happened. */
-	private String source;
+    /**
+     * The source file the client side code was executing when the error happened.
+     */
+    private String source;
 
-	/** The line in the source file the client side code was executing when the error happened. */
-	private int lineno;
+    /**
+     * The line in the source file the client side code was executing when the error happened.
+     */
+    private int lineno;
 
-	/** The starting column in the source file the client side code was executing when the error happened. */
-	private int colno;
+    /**
+     * The starting column in the source file the client side code was executing when the error happened.
+     */
+    private int colno;
 }

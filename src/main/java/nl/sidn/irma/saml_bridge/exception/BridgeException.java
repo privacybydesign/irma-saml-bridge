@@ -7,20 +7,15 @@ import org.springframework.http.HttpStatusCode;
  * communicated to the end user.
  */
 public class BridgeException extends Exception {
-	private HttpStatusCode httpStatusCode;
-	private String message;
+    private final HttpStatusCode httpStatusCode;
 
-	public BridgeException(HttpStatusCode httpStatusCode, String message) {
-		this.httpStatusCode = httpStatusCode;
-		this.message = message;
-	}
+    public BridgeException(final HttpStatusCode httpStatusCode, final String message) {
+        super(message);
+        this.httpStatusCode = httpStatusCode;
+    }
 
-	@SuppressWarnings("javadoc")
-	public int getHttpStatusCode() {
-		return httpStatusCode.value();
-	}
+    public int getHttpStatusCode() {
+        return httpStatusCode.value();
+    }
 
-	public String getMessage() {
-		return message;
-	}
 }

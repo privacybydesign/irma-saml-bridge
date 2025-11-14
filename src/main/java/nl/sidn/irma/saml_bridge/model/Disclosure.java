@@ -12,108 +12,116 @@ import java.util.TreeMap;
 
 /**
  * An IRMA disclosure extracted from a JSON object.
- * 
- * See https://irma.app/docs/api-irma-server/#get-session-token-result for the structure of the response.
+ * <p>
+ * See <a href="https://irma.app/docs/api-irma-server/#get-session-token-result">Yivi Docs</a> for the structure of the response.
  */
 @Data
 public class Disclosure {
-	/** The disclosed attributeset, i.e. "[irma-demo.MijnOverheid.ageLower.over18]" */
-	private Map<String, String> attributes;
+    /**
+     * The disclosed attributeset, i.e. "[irma-demo.MijnOverheid.ageLower.over18]"
+     */
+    private Map<String, String> attributes;
 
-	/** Status of the related to the session. Can be VALID, INVALID, etc. */
-	private String proofStatus;
+    /**
+     * Status of the related to the session. Can be VALID, INVALID, etc.
+     */
+    private String proofStatus;
 
-	/** Session token or identifier. */
-	private String token;
+    /**
+     * Session token or identifier.
+     */
+    private String token;
 
-	/**
-	 * Extract a Disclosure from a JWT IRMA session result.
-	 * 
-	 * @param jwt A JWT session result adhering to the documentation as per https://irma.app/docs/api-irma-server/#get-session-token-result.
-	 * @return The disclosure.
-	 * @throws MalformedException
-	 */
-	public static Disclosure fromJwt(Jws<Claims> jwt) throws MalformedException {
-		ArrayList<ArrayList<Map<String, Object>>> disclosed;
+    /**
+     * Extract a Disclosure from a JWT IRMA session result.
+     *
+     * @param jwt A JWT session result adhering to the documentation as per <a href="https://irma.app/docs/api-irma-server/#get-session-token-result">get-session-token-result</a>.
+     * @return The disclosure.
+     * @throws MalformedException The malformed exception.
+     */
+    public static Disclosure fromJwt(final Jws<Claims> jwt) throws MalformedException {
+        final ArrayList<ArrayList<Map<String, Object>>> disclosed;
 
-		try {
-			// First allocate a temporary value, due to analysis bug in Eclipse
-			@SuppressWarnings("unchecked")
-			ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getBody().get("disclosed");
-			disclosed = tmp;
+        try {
+            // First allocate a temporary value, due to analysis bug in Eclipse
+            @SuppressWarnings("unchecked") final ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getPayload().get("disclosed");
+            disclosed = tmp;
 
-		} catch (ClassCastException e) {
-			throw new MalformedException();
-		}
+        } catch (final ClassCastException e) {
+            throw new MalformedException();
+        }
 
-		Map<String, String> attributes = new TreeMap<>();
-		for (List<Map<String, Object>> con : disclosed) {
-			boolean allPresent = true;
-			Map<String, String> ourAttributes = new TreeMap<>();
+        final Map<String, String> attributes = new TreeMap<>();
+        for (final List<Map<String, Object>> con : disclosed) {
+            boolean allPresent = true;
+            final Map<String, String> ourAttributes = new TreeMap<>();
 
-			for (Map<String, Object> attribute : con) {
-				String status = (String) attribute.get("status");
-				// TODO: Optional attributes (with status NULL) cannot be handled.
-				if (!status.equals("PRESENT")) {
-					allPresent = false;
-					break;
-				}
-				ourAttributes.put((String) attribute.get("id"), (String) attribute.get("rawvalue"));
-			}
+            for (final Map<String, Object> attribute : con) {
+                final String status = (String) attribute.get("status");
+                // TODO: Optional attributes (with status NULL) cannot be handled.
+                if (!status.equals("PRESENT")) {
+                    allPresent = false;
+                    break;
+                }
+                ourAttributes.put((String) attribute.get("id"), (String) attribute.get("rawvalue"));
+            }
 
-			if (allPresent) {
-				// TODO: Handle case when multiple conjunctions contain the same attribute type.
-				attributes.putAll(ourAttributes);
-			}
-		}
+            if (allPresent) {
+                // TODO: Handle case when multiple conjunctions contain the same attribute type.
+                attributes.putAll(ourAttributes);
+            }
+        }
 
-		Disclosure result = new Disclosure();
-		result.attributes = attributes;
-		result.proofStatus= (String) jwt.getBody().get("proofStatus");
-		result.token = (String) jwt.getBody().get("token");
+        final Disclosure result = new Disclosure();
+        result.attributes = attributes;
+        result.proofStatus = (String) jwt.getPayload().get("proofStatus");
+        result.token = (String) jwt.getPayload().get("token");
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Checks whether our attributes fulfill the specified condiscon.
-	 * @param condiscon
-	 * @return Compliance or failure.
-	 */
-	public boolean fulfillsCondiscon(String[][][] condiscon) {
-		for (String[][] discon : condiscon) {
-			if (!this.fulfillsDiscon(discon)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    /**
+     * Checks whether our attributes fulfill the specified condiscon.
+     *
+     * @param condiscon The condiscon to check.
+     * @return Compliance or failure.
+     */
+    public boolean fulfillsCondiscon(final String[][][] condiscon) {
+        for (final String[][] discon : condiscon) {
+            if (!this.fulfillsDiscon(discon)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	/**
-	 * Checks whether our attributes fulfill the specified discon.
-	 * @param discon
-	 * @return Compliance or failure.
-	 */
-	public boolean fulfillsDiscon(String[][] discon) {
-		for (String[] con : discon) {
-			if (this.fulfillsCon(con)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Checks whether our attributes fulfill the specified discon.
+     *
+     * @param discon The discon to check.
+     * @return Compliance or failure.
+     */
+    public boolean fulfillsDiscon(final String[][] discon) {
+        for (final String[] con : discon) {
+            if (this.fulfillsCon(con)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Checks whether our attributes fulfill the specified con.
-	 * @param con
-	 * @return Compliance or failure.
-	 */
-	public boolean fulfillsCon(String[] con) {
-		for (String id : con) {
-			if (!this.attributes.keySet().contains(id)) {
-				return false;
-			}
-		}
-		return true;
-	}
+    /**
+     * Checks whether our attributes fulfill the specified con.
+     *
+     * @param con The con to check.
+     * @return Compliance or failure.
+     */
+    public boolean fulfillsCon(final String[] con) {
+        for (final String id : con) {
+            if (!this.attributes.containsKey(id)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
