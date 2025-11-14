@@ -26,7 +26,13 @@ public class ErrorReportController {
     public void report(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         final ClientError error = objectMapper.readValue(request.getReader(), ClientError.class);
 
-        log.warn("action=\"clientsideerror\", source=\"{}\", linenr=\"{}\", colnr=\"{}\", message=\"{}\"", limitString(error.getSource(), 50), error.getLineno(), error.getColno(), limitString(error.getMessage(), 256));
+        log.warn(
+                "action=\"clientsideerror\", source=\"{}\", linenr=\"{}\", colnr=\"{}\", message=\"{}\"",
+                sanitizeForLog(limitString(error.getSource(), 50)),
+                error.getLineno(),
+                error.getColno(),
+                sanitizeForLog(limitString(error.getMessage(), 256))
+        );
 
         response.setStatus(200);
     }
@@ -40,5 +46,16 @@ public class ErrorReportController {
             return str.substring(0, length);
         }
         return str;
+    }
+
+    /**
+     * Sanitize a string for safe logging by removing CR, LF and other control chars except printable ASCII.
+     */
+    private static String sanitizeForLog(final String input) {
+        if (input == null) {
+            return null;
+        }
+        // Remove CR and LF, and any other ISO control characters except for standard printable ASCII.
+        return input.replaceAll("[\\r\\n\\x00-\\x1F\\x7F]+", " ");
     }
 }
