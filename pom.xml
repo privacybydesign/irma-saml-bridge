@@ -27,7 +27,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot.version>3.2.0</spring-boot.version>
+        <spring-boot.version>3.2.3</spring-boot.version>
         <skipTests>true</skipTests> <!-- there is an issue with the tests at the moment -->
     </properties>
 
