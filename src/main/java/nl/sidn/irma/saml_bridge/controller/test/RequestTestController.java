@@ -2,7 +2,7 @@ package nl.sidn.irma.saml_bridge.controller.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import net.shibboleth.shared.component.ComponentInitializationException;
 import nl.sidn.irma.saml_bridge.service.ConfigurationService;
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import nl.sidn.irma.saml_bridge.util.HTTPRedirectDeflateEncoder;

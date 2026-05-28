@@ -1,6 +1,6 @@
 package nl.sidn.irma.saml_bridge.service;
 
-import net.shibboleth.utilities.java.support.xml.ParserPool;
+import net.shibboleth.shared.xml.ParserPool;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.Disclosure;
 import nl.sidn.irma.saml_bridge.model.ResultStatus;

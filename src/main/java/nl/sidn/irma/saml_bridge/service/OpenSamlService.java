@@ -1,8 +1,8 @@
 package nl.sidn.irma.saml_bridge.service;
 
 import com.google.common.io.BaseEncoding;
-import net.shibboleth.utilities.java.support.xml.ParserPool;
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import net.shibboleth.shared.xml.ParserPool;
+import net.shibboleth.shared.xml.XMLParserException;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.Configuration;
 import nl.sidn.irma.saml_bridge.model.Disclosure;

@@ -38,14 +38,14 @@ import java.util.zip.DeflaterOutputStream;
 import javax.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
 
-import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
-import net.shibboleth.utilities.java.support.codec.Base64Support;
-import net.shibboleth.utilities.java.support.codec.EncodingException;
-import net.shibboleth.utilities.java.support.collection.Pair;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.net.URLBuilder;
-import net.shibboleth.utilities.java.support.primitive.StringSupport;
-import net.shibboleth.utilities.java.support.xml.SerializeSupport;
+import net.shibboleth.shared.annotation.constraint.NonnullElements;
+import net.shibboleth.shared.codec.Base64Support;
+import net.shibboleth.shared.codec.EncodingException;
+import net.shibboleth.shared.collection.Pair;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.net.URLBuilder;
+import net.shibboleth.shared.primitive.StringSupport;
+import net.shibboleth.shared.xml.SerializeSupport;
 
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.io.MarshallingException;

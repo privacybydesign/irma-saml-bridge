@@ -1,6 +1,6 @@
 package nl.sidn.irma.saml_bridge.service;
 
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import net.shibboleth.shared.xml.XMLParserException;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.Disclosure;
