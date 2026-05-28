@@ -2,6 +2,7 @@ package nl.sidn.irma.saml_bridge.controller;
 
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import nl.sidn.irma.saml_bridge.service.OpenSamlService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,6 +35,13 @@ class MetadataControllerTest {
     @MockBean
     KeyService keyService;
 
+    @BeforeEach
+    void init() throws CertificateEncodingException {
+        X509Certificate cert = mock(X509Certificate.class);
+        when(keyService.getSamlCertificate()).thenReturn(cert);
+        when(cert.getEncoded()).thenReturn("test".getBytes());
+    }
+
     @Test
     void metadataTest() throws Exception {
         MvcResult mvcResult = mockMvc.perform(get(BASE_URL))
@@ -45,7 +53,6 @@ class MetadataControllerTest {
 
     @Test
     void metadataTestThrowCertificateEncodingException() throws Exception {
-        when(keyService.getSamlCertificate()).thenReturn(mock(X509Certificate.class));
         when(keyService.getSamlCertificate().getEncoded()).thenThrow(mock(CertificateEncodingException.class));
         MvcResult mvcResult = mockMvc.perform(get(BASE_URL))
                 .andExpect(status().isInternalServerError())
