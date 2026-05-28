@@ -423,11 +423,11 @@ public class RequestController {
                     model);
         }
 
-        // The frontend has no support for switching languages in the middle of a
-        // session. Therefore, we hardcode the language for now.
-        // TODO: Check whether Signicat gives us a language to use. Otherwise, add
-        // support in irma-web to switch language manually.
-        String language = "nl";
+        // The yivi frontend has no support for switching languages mid-session,
+        // so we pick one from the browser's Accept-Language header. The asset
+        // bundle ships English and Dutch translations; default to Dutch when the
+        // negotiated locale is neither.
+        String language = "en".equals(request.getLocale().getLanguage()) ? "en" : "nl";
 
         // Use a URL with the external host to prevent CORS issues.
         String externalIrmaServiceBaseUrl = protocol + host;
