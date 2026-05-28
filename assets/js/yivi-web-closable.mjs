@@ -1,4 +1,4 @@
-import YiviWeb from '@privacybydesign/yivi-web';
+import { YiviWeb } from '@privacybydesign/yivi-web';
 
 /**
  * Extension of YiviWeb plugin that responds on the close button.

@@ -1,5 +1,5 @@
-import YiviCore from '@privacybydesign/yivi-core';
-import YiviClient from '@privacybydesign/yivi-client';
+import { YiviCore } from '@privacybydesign/yivi-core';
+import { YiviClient } from '@privacybydesign/yivi-client';
 import { postJson } from './transport.mjs';
 
 /**
