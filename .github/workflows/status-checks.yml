@@ -44,6 +44,10 @@ jobs:
             queries: security-and-quality
 
         - name: Build with Maven
+          env:
+            VERSION: 0.0
+            BUILD_TYPE: ci
+            BUILD_NUMBER: 0
           run: mvn -B -DskipTests clean package
 
         - name: Perform CodeQL Analysis
