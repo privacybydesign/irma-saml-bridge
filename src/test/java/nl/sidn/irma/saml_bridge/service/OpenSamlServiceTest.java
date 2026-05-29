@@ -10,7 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.metadata.AssertionConsumerService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.cert.CertificateEncodingException;
@@ -18,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 
 import static nl.sidn.irma.saml_bridge.Fixtures.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -90,6 +93,20 @@ class OpenSamlServiceTest {
     void createSPMetadataTest() throws CertificateEncodingException {
         EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
         assertNotNull(entityDescriptor);
+    }
+
+    @Test
+    void createSPMetadataAssertionConsumerServiceHonoursConfiguredPostfix() throws CertificateEncodingException {
+        // Regression for the hardcoded "/irma-saml-bridge/test/return" Location that broke
+        // the SAML return flow in every deployed env where the context-path differs from
+        // the local-dev default.
+        when(configurationService.getConfiguration()).thenReturn(configuration(c -> c.setPostfix("/saml-bridge")));
+
+        EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
+
+        SPSSODescriptor spssoDescriptor = (SPSSODescriptor) entityDescriptor.getRoleDescriptors().get(0);
+        AssertionConsumerService acs = spssoDescriptor.getAssertionConsumerServices().get(0);
+        assertEquals("http://localhost:8080/saml-bridge/test/return", acs.getLocation());
     }
 
 }
