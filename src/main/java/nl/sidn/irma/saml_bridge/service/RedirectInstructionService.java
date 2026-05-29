@@ -1,9 +1,9 @@
 package nl.sidn.irma.saml_bridge.service;
 
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.codec.Base64Support;
-import net.shibboleth.utilities.java.support.codec.EncodingException;
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import net.shibboleth.shared.codec.Base64Support;
+import net.shibboleth.shared.codec.EncodingException;
+import net.shibboleth.shared.xml.XMLParserException;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.*;
 import org.opensaml.core.xml.io.MarshallingException;

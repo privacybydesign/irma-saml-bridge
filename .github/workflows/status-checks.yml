@@ -16,7 +16,7 @@ jobs:
     build:
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
         - name: Build Docker image
           run: docker build .
@@ -29,24 +29,24 @@ jobs:
         contents: read
         security-events: write
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-        - uses: actions/setup-java@v4
+        - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
           with:
             java-version: '17'
             distribution: temurin
             cache: maven
 
         - name: Initialize CodeQL
-          uses: github/codeql-action/init@v2
+          uses: github/codeql-action/init@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
           with:
             languages: java
             queries: security-and-quality
 
-        - name: Autobuild
-          uses: github/codeql-action/autobuild@v2
+        - name: Build with Maven
+          run: mvn -B -DskipTests clean package
 
         - name: Perform CodeQL Analysis
-          uses: github/codeql-action/analyze@v2
+          uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
           with:
             category: "/language:java"

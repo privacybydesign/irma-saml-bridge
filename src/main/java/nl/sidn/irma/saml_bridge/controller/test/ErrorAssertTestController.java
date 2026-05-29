@@ -2,18 +2,18 @@ package nl.sidn.irma.saml_bridge.controller.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.codec.Base64Support;
-import net.shibboleth.utilities.java.support.codec.DecodingException;
+import net.shibboleth.shared.codec.Base64Support;
+import net.shibboleth.shared.codec.DecodingException;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.AssertRequest;
 import nl.sidn.irma.saml_bridge.model.RedirectInstruction;
 import nl.sidn.irma.saml_bridge.model.RequestError;
 import nl.sidn.irma.saml_bridge.util.JwtUtil;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -114,10 +114,11 @@ public class ErrorAssertTestController {
         HttpPost request = new HttpPost(String.format("%s" + endpointUrl, BASE_URL));
         request.setEntity(new StringEntity(objectMapper.writeValueAsString(arequest)));
 
-        HttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        RedirectInstruction redirectInstruction = objectMapper.readValue(response.getEntity().getContent(),
-                RedirectInstruction.class);
+        RedirectInstruction redirectInstruction;
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            redirectInstruction = httpClient.execute(request, response ->
+                    objectMapper.readValue(response.getEntity().getContent(), RedirectInstruction.class));
+        }
         // decode SAML response so we can check the XML response
         if (redirectInstruction.getSamlResponse() != null) {
             byte[] samlResponse = Base64Support.decode(redirectInstruction.getSamlResponse());

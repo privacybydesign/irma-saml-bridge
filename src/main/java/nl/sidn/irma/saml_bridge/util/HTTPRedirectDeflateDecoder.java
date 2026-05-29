@@ -32,12 +32,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 
-import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
-import net.shibboleth.utilities.java.support.codec.Base64Support;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.primitive.StringSupport;
-import net.shibboleth.utilities.java.support.xml.ParserPool;
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import net.shibboleth.shared.annotation.constraint.NotEmpty;
+import net.shibboleth.shared.codec.Base64Support;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.primitive.StringSupport;
+import net.shibboleth.shared.xml.ParserPool;
+import net.shibboleth.shared.xml.XMLParserException;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.opensaml.core.xml.XMLObject;

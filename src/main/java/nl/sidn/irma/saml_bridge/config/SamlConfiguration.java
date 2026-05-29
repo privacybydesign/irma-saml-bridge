@@ -1,8 +1,8 @@
 package nl.sidn.irma.saml_bridge.config;
 
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.xml.BasicParserPool;
-import net.shibboleth.utilities.java.support.xml.ParserPool;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.xml.impl.BasicParserPool;
+import net.shibboleth.shared.xml.ParserPool;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -3,8 +3,8 @@ package nl.sidn.irma.saml_bridge.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import net.shibboleth.shared.resolver.ResolverException;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.Configuration;
@@ -423,11 +423,17 @@ public class RequestController {
                     model);
         }
 
-        // The frontend has no support for switching languages in the middle of a
-        // session. Therefore, we hardcode the language for now.
-        // TODO: Check whether Signicat gives us a language to use. Otherwise, add
-        // support in irma-web to switch language manually.
+        // The yivi frontend has no support for switching languages mid-session,
+        // so we pick one from the browser's Accept-Language header. The asset
+        // bundle ships English and Dutch translations; default to Dutch when the
+        // header is missing or doesn't negotiate to English. We avoid
+        // request.getLocale() here because it falls back to the JVM default
+        // locale (en_US on the runtime image) when no Accept-Language is sent.
         String language = "nl";
+        if (request.getHeader("Accept-Language") != null
+                && "en".equals(request.getLocale().getLanguage())) {
+            language = "en";
+        }
 
         // Use a URL with the external host to prevent CORS issues.
         String externalIrmaServiceBaseUrl = protocol + host;

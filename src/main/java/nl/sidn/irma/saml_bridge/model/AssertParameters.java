@@ -57,6 +57,11 @@ public class AssertParameters {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> params = (Map<String, Object>) claims.get("aparams");
 
+		String requestErrorJson = (String) params.get("request_error");
+		RequestError requestError = (requestErrorJson != null)
+				? new ObjectMapper().readValue(requestErrorJson, RequestError.class)
+				: null;
+
 		return AssertParameters.builder()
 				.spName((String) params.get("sp_name"))
 				.requestId((String) params.get("request_id"))
@@ -64,7 +69,7 @@ public class AssertParameters {
 				.issuer((String) params.get("issuer"))
 				.condiscon((String) params.get("condiscon"))
 				.relayState((String) params.get("relay_state"))
-				.requestError(new ObjectMapper().readValue((String) params.get("request_error"), RequestError.class))
+				.requestError(requestError)
 				.build();
 	}
 }

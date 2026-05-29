@@ -1,11 +1,12 @@
 package nl.sidn.irma.saml_bridge.service;
 
 import com.google.common.io.BaseEncoding;
-import net.shibboleth.utilities.java.support.xml.ParserPool;
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
+import net.shibboleth.shared.xml.ParserPool;
+import net.shibboleth.shared.xml.XMLParserException;
 import nl.sidn.irma.saml_bridge.model.AssertParameters;
 import nl.sidn.irma.saml_bridge.model.Configuration;
 import nl.sidn.irma.saml_bridge.model.Disclosure;
+import nl.sidn.irma.saml_bridge.model.RequestError;
 import nl.sidn.irma.saml_bridge.model.ResultStatus;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
@@ -337,8 +338,9 @@ public class OpenSamlService {
 
 			// Add errormessage, see IRMA-1184
 			StatusMessageImpl statusMessage = statusMessageBuilder.buildObject();
-			statusMessage.setValue((assertParameters.getRequestError().getMessage() != null)
-					? assertParameters.getRequestError().getMessage()
+			RequestError requestError = assertParameters.getRequestError();
+			statusMessage.setValue((requestError != null && requestError.getMessage() != null)
+					? requestError.getMessage()
 					: "");
 			status.setStatusMessage(statusMessage);
 
@@ -510,7 +512,7 @@ public class OpenSamlService {
 		AssertionConsumerService assertionConsumerService = assertionConsumerServiceBuilder.buildObject();
 		assertionConsumerService.setIndex(0);
 		assertionConsumerService.setBinding(SAML_BINDINGS_REDIRECT);
-		assertionConsumerService.setLocation("/irma-saml-bridge/test/return");
+		assertionConsumerService.setLocation(configuration.constructUrl("/test/return"));
 		spSsoDescriptor.getAssertionConsumerServices().add(assertionConsumerService);
 
 		OrganizationDisplayNameImpl organizationDisplayName = displayNameBuilder.buildObject();

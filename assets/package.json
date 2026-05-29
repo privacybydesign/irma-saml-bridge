@@ -7,23 +7,23 @@
     "test": "parcel test.html"
   },
   "devDependencies": {
-    "browserslist": "^4.7.0",
+    "browserslist": "^4.28.2",
     "buffer": "^6.0.0",
     "events": "^3.1.0",
     "https-browserify": "^1.0.0",
-    "parcel": "^2.9.3",
+    "parcel": "^2.16.4",
     "process": "^0.11.10",
     "stream-http": "^3.1.0",
-    "url": "^0.11.0",
+    "url": "^0.11.4",
     "util": "^0.12.3"
   },
   "dependencies": {
-    "@privacybydesign/yivi-client": "^0.1.2",
-    "@privacybydesign/yivi-core": "^0.1.2",
-    "@privacybydesign/yivi-css": "^0.1.2",
-    "@privacybydesign/yivi-web": "^0.1.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@privacybydesign/yivi-client": "^1.0.0",
+    "@privacybydesign/yivi-core": "^1.0.0",
+    "@privacybydesign/yivi-css": "^1.0.1",
+    "@privacybydesign/yivi-web": "^1.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "browserslist": [
     "defaults"
