@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.sidn.irma.saml-bridge</groupId>
     <artifactId>IRMA-saml-bridge</artifactId>
-    <version>${env.VERSION}.${env.BUILD_TYPE}${env.BUILD_NUMBER}</version>
+    <version>${revision}</version>
     <packaging>jar</packaging>
     <name>irma-saml-bridge</name>
 
@@ -19,6 +19,8 @@
     </repositories>
 
     <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
