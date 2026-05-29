@@ -512,7 +512,7 @@ public class OpenSamlService {
 		AssertionConsumerService assertionConsumerService = assertionConsumerServiceBuilder.buildObject();
 		assertionConsumerService.setIndex(0);
 		assertionConsumerService.setBinding(SAML_BINDINGS_REDIRECT);
-		assertionConsumerService.setLocation("/irma-saml-bridge/test/return");
+		assertionConsumerService.setLocation(configuration.constructUrl("/test/return"));
 		spSsoDescriptor.getAssertionConsumerServices().add(assertionConsumerService);
 
 		OrganizationDisplayNameImpl organizationDisplayName = displayNameBuilder.buildObject();
