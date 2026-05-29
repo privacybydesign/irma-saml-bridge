@@ -8,7 +8,7 @@ import nl.sidn.irma.saml_bridge.model.AssertRequest;
 import nl.sidn.irma.saml_bridge.model.RedirectInstruction;
 import nl.sidn.irma.saml_bridge.util.JwtUtil;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.http.MediaType;
@@ -88,10 +88,11 @@ public class AssertTestController {
         HttpPost request = new HttpPost(String.format("%s/assert", BASE_URL));
         request.setEntity(new StringEntity(objectMapper.writeValueAsString(arequest)));
 
-        CloseableHttpResponse response = HttpClientBuilder.create().build().execute(request);
-
-        RedirectInstruction redirectInstruction = objectMapper.readValue(response.getEntity().getContent(),
-                RedirectInstruction.class);
+        RedirectInstruction redirectInstruction;
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            redirectInstruction = httpClient.execute(request, response ->
+                    objectMapper.readValue(response.getEntity().getContent(), RedirectInstruction.class));
+        }
         // decode SAML response so we can check the XML response
         if (redirectInstruction.getSamlResponse() != null) {
             byte[] samlResponse = Base64Support.decode(redirectInstruction.getSamlResponse());
