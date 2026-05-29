@@ -43,8 +43,8 @@ jobs:
             languages: java
             queries: security-and-quality
 
-        - name: Autobuild
-          uses: github/codeql-action/autobuild@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
+        - name: Build with Maven
+          run: mvn -B -DskipTests clean package
 
         - name: Perform CodeQL Analysis
           uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
