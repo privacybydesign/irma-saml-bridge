@@ -86,10 +86,10 @@ public class ErrorAssertController {
         AssertRequest assertRequest = objectMapper.readValue(request.getReader(), AssertRequest.class);
 
         // Decode our pre-prepared set of assertion parameters.
-        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPrivateKey(), assertRequest.getParameters());
+        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPublicKey(), assertRequest.getParameters());
 
         // Unpack the Assertion parameters.
-        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getBody());
+        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
         if(requestError != null) {
             assertParameters.setRequestError(requestError);
         }

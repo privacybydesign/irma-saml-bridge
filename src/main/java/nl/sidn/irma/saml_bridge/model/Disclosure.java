@@ -39,7 +39,7 @@ public class Disclosure {
 		try {
 			// First allocate a temporary value, due to analysis bug in Eclipse
 			@SuppressWarnings("unchecked")
-			ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getBody().get("disclosed");
+			ArrayList<ArrayList<Map<String, Object>>> tmp = (ArrayList<ArrayList<Map<String, Object>>>) jwt.getPayload().get("disclosed");
 			disclosed = tmp;
 
 		} catch (ClassCastException e) {
@@ -69,8 +69,8 @@ public class Disclosure {
 
 		Disclosure result = new Disclosure();
 		result.attributes = attributes;
-		result.proofStatus= (String) jwt.getBody().get("proofStatus");
-		result.token = (String) jwt.getBody().get("token");
+		result.proofStatus= (String) jwt.getPayload().get("proofStatus");
+		result.token = (String) jwt.getPayload().get("token");
 
 		return result;
 	}

@@ -56,8 +56,9 @@ public class AssertController {
         // Decode the IRMA response.
         Jws<Claims> token = jwtUtil.getClaims(keyService.getIrmaPublicKey(), arequest.getToken());
 
-        // Decode our pre-prepared set of assertion parameters.
-        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPrivateKey(), arequest.getParameters());
+        // Decode our pre-prepared set of assertion parameters (self-signed by the bridge;
+        // verified with the public key derived from our JWT private key).
+        Jws<Claims> parametersJws = jwtUtil.getClaims(keyService.getJwtPublicKey(), arequest.getParameters());
 
         // Unpack the IRMA response.
         Disclosure disclosure;
@@ -71,7 +72,7 @@ public class AssertController {
         }
 
         // Unpack the Assertion parameters.
-        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getBody());
+        AssertParameters assertParameters = AssertParameters.fromClaims(parametersJws.getPayload());
 
         // Verify that IRMA response is valid and present
         if (disclosure.getAttributes().isEmpty() || !"VALID".equals(disclosure.getProofStatus())) {

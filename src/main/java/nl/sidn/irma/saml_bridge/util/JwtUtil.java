@@ -7,12 +7,10 @@ import nl.sidn.irma.saml_bridge.service.ConfigurationService;
 import nl.sidn.irma.saml_bridge.service.KeyService;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
-import java.sql.Date;
+import java.security.PublicKey;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
-
-import static io.jsonwebtoken.Jwts.parserBuilder;
 
 @Service
 public class JwtUtil {
@@ -28,30 +26,30 @@ public class JwtUtil {
         this.keyService = keyService;
     }
 
-    public Jws<Claims> getClaims(Key key, String claims) {
-        return parserBuilder()
-                .setSigningKey(key)
+    public Jws<Claims> getClaims(PublicKey key, String claims) {
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(claims);
+                .parseSignedClaims(claims);
     }
 
     public String createJwtToken(String subject, String claimName, Object claim) {
         return Jwts.builder()
-                .setIssuedAt(Date.from(Instant.now()))
-                .setIssuer(this.configurationService.getConfiguration().getIssuerName())
-                .setSubject(subject)
-                .signWith(this.keyService.getJwtPrivateKey())
+                .issuedAt(Date.from(Instant.now()))
+                .issuer(this.configurationService.getConfiguration().getIssuerName())
+                .subject(subject)
                 .claim(claimName, claim)
+                .signWith(this.keyService.getJwtPrivateKey())
                 .compact();
     }
 
     public String createTestIrmaJwtTokenWithClaims(String issuer, String subject, Map<String, Object> claims) {
         return Jwts.builder()
-                .setIssuedAt(Date.from(Instant.now()))
-                .setIssuer(issuer)
-                .setSubject(subject)
+                .issuedAt(Date.from(Instant.now()))
+                .issuer(issuer)
+                .subject(subject)
+                .claims().add(claims).and()
                 .signWith(this.keyService.getTestIrmaPrivateKey())
-                .setClaims(claims)
                 .compact();
     }
 }

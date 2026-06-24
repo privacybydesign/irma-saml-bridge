@@ -3,7 +3,7 @@ package nl.sidn.irma.saml_bridge.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.Jwts;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.*;
 import nl.sidn.irma.saml_bridge.service.KeyService;
@@ -20,8 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.security.Key;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -58,7 +59,7 @@ class ErrorAssertControllerTest {
 
     @BeforeEach
     void init() {
-        when(keyService.getJwtPrivateKey()).thenReturn(mock(RSAPrivateKey.class));
+        when(keyService.getJwtPublicKey()).thenReturn(mock(RSAPublicKey.class));
         Map<String, Object> params = new TreeMap<>();
         params.put("sp_name", "sp_name");
         params.put("request_id", "request_id");
@@ -67,12 +68,13 @@ class ErrorAssertControllerTest {
         params.put("condiscon", "condiscon");
         params.put("relay_state", "relay_state");
 
-        Claims claims = new DefaultClaims();
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
     }
 
     @Test
