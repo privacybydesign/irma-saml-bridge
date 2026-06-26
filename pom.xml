@@ -77,26 +77,24 @@
         </dependency>
 
         <!-- JWT.
-             NOTE: still on 0.11.x. The 0.12+ major reworked the parser API and dropped
-             setSigningKey(Key); verifyWith() requires a PublicKey, while JwtUtil currently
-             verifies our own self-signed assertParameters JWT with the RSA *private* key.
-             Migrating means deriving the public key from RSAPrivateCrtKey (or switching to
-             HMAC) — kept out of this dependency-bump PR. -->
+             0.12+ reworked the parser API: verifyWith() requires a PublicKey. JwtUtil
+             verifies our own self-signed assertParameters JWT, so the RSA public key is
+             derived from the bridge's RSAPrivateCrtKey in KeyService (see getJwtPublicKey()). -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-orgjson</artifactId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
 

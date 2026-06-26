@@ -3,7 +3,7 @@ package nl.sidn.irma.saml_bridge.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.Jwts;
 import nl.sidn.irma.saml_bridge.exception.BridgeException;
 import nl.sidn.irma.saml_bridge.model.*;
 import nl.sidn.irma.saml_bridge.service.KeyService;
@@ -20,9 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.security.Key;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -59,7 +59,7 @@ class AssertControllerTest {
     @BeforeEach
     void init() {
         when(keyService.getIrmaPublicKey()).thenReturn(mock(RSAPublicKey.class));
-        when(keyService.getJwtPrivateKey()).thenReturn(mock(RSAPrivateKey.class));
+        when(keyService.getJwtPublicKey()).thenReturn(mock(RSAPublicKey.class));
     }
 
     @Test
@@ -75,15 +75,16 @@ class AssertControllerTest {
         params.put("condiscon", objectMapperTest.writeValueAsString(new String[][][]{{{"12345"}}}));
         params.put("relay_state", "relay_state");
 
-        Claims claims = new DefaultClaims();
-        claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
-        claims.put("proofStatus", "VALID");
-        claims.put("token", "token");
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("disclosed", defaultDiscloseClaims("PRESENT"));
+        claimsMap.put("proofStatus", "VALID");
+        claimsMap.put("token", "token");
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
@@ -110,15 +111,16 @@ class AssertControllerTest {
         params.put("condiscon", objectMapperTest.writeValueAsString(new String[][][]{{{"12345"}}}));
         params.put("relay_state", "relay_state");
 
-        Claims claims = new DefaultClaims();
-        claims.put("disclosed", "malformedClaim");
-        claims.put("proofStatus", "VALID");
-        claims.put("token", "token");
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("disclosed", "malformedClaim");
+        claimsMap.put("proofStatus", "VALID");
+        claimsMap.put("token", "token");
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
 
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenReturn(redirectInstructionMock);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
@@ -143,15 +145,16 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
-        claims.put("disclosed", defaultDiscloseClaims("PRESENT1"));
-        claims.put("proofStatus", "VALID");
-        claims.put("token", "token");
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("disclosed", defaultDiscloseClaims("PRESENT1"));
+        claimsMap.put("proofStatus", "VALID");
+        claimsMap.put("token", "token");
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
@@ -173,15 +176,16 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
-        claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
-        claims.put("proofStatus", "VALID1");
-        claims.put("token", "token");
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("disclosed", defaultDiscloseClaims("PRESENT"));
+        claimsMap.put("proofStatus", "VALID1");
+        claimsMap.put("token", "token");
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapperTest.writeValueAsString(assertRequestMock))
@@ -203,15 +207,16 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
-        claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
-        claims.put("proofStatus", "VALID");
-        claims.put("token", "token");
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("disclosed", defaultDiscloseClaims("PRESENT"));
+        claimsMap.put("proofStatus", "VALID");
+        claimsMap.put("token", "token");
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
 
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -234,15 +239,16 @@ class AssertControllerTest {
         params.put("relay_state", "relay_state");
 
         AssertRequest assertRequestMock = assertRequest();
-        Claims claims = new DefaultClaims();
-        claims.put("disclosed", defaultDiscloseClaims("PRESENT"));
-        claims.put("proofStatus", "VALID");
-        claims.put("token", "token");
-        claims.put("aparams", params);
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("disclosed", defaultDiscloseClaims("PRESENT"));
+        claimsMap.put("proofStatus", "VALID");
+        claimsMap.put("token", "token");
+        claimsMap.put("aparams", params);
 
+        Claims claims = Jwts.claims().add(claimsMap).build();
         Jws<Claims> claimsJws = mock(Jws.class);
-        when(claimsJws.getBody()).thenReturn(claims);
-        when(jwtUtil.getClaims(any(Key.class), anyString())).thenReturn(claimsJws);
+        when(claimsJws.getPayload()).thenReturn(claims);
+        when(jwtUtil.getClaims(any(PublicKey.class), anyString())).thenReturn(claimsJws);
         when(redirectInstructionService.create(any(AssertParameters.class), any(Disclosure.class), any(ResultStatus.class))).thenThrow(new BridgeException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
         MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
