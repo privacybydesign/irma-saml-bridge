@@ -57,11 +57,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.security.SecureRandom;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
 /**
  * Service that initializes the OpenSAML library and provides the base
@@ -72,6 +72,10 @@ import java.util.Random;
 public class OpenSamlService {
 
 	private static final String SAML_BINDINGS_REDIRECT = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
+
+	private static final String SAML_PROTOCOL_NS = "urn:oasis:names:tc:SAML:2.0:protocol";
+
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final ConfigurationService configurationService;
 
@@ -377,8 +381,7 @@ public class OpenSamlService {
 	 */
 	private String generateId() {
 		byte[] bytes = new byte[20];
-		Random random = new Random();
-		random.nextBytes(bytes);
+		SECURE_RANDOM.nextBytes(bytes);
 		return new String(Base64.getEncoder().encode(bytes));
 	}
 
@@ -613,7 +616,7 @@ public class OpenSamlService {
 	 *                         be retrieved from the SignatureValidationService.
 	 */
 	public String findRedirectAssertionConsumerService(EntityDescriptor entityDescriptor) {
-		SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
+		SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor(SAML_PROTOCOL_NS);
 
 		if (spssoDescriptor == null) {
 			return null;
@@ -626,5 +629,40 @@ public class OpenSamlService {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Verify that an AssertionConsumerServiceURL requested in an AuthnRequest is
+	 * registered in the SP's metadata.
+	 *
+	 * The SAML 2.0 core spec (§3.4.1.1) requires an IdP to verify a requested
+	 * AssertionConsumerServiceURL against the SP metadata before using it as the
+	 * response destination; otherwise an attacker could redirect the assertion to
+	 * a location of their choosing.
+	 *
+	 * @param entityDescriptor The SP descriptor resolved by the
+	 *                         SignatureValidationService.
+	 * @param url              The requested AssertionConsumerServiceURL.
+	 * @return true if the URL matches a registered AssertionConsumerService
+	 *         location, false otherwise.
+	 */
+	public boolean isRegisteredAssertionConsumerService(EntityDescriptor entityDescriptor, String url) {
+		if (url == null) {
+			return false;
+		}
+
+		SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor(SAML_PROTOCOL_NS);
+
+		if (spssoDescriptor == null) {
+			return false;
+		}
+
+		for (AssertionConsumerService assertionConsumerService : spssoDescriptor.getAssertionConsumerServices()) {
+			if (url.equals(assertionConsumerService.getLocation())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
