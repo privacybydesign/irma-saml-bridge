@@ -21,7 +21,9 @@ import java.util.Collections;
 
 import static nl.sidn.irma.saml_bridge.Fixtures.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -109,4 +111,39 @@ class OpenSamlServiceTest {
         assertEquals("http://localhost:8080/saml-bridge/test/return", acs.getLocation());
     }
 
+    @Test
+    void isRegisteredAssertionConsumerServiceAcceptsRegisteredUrl() throws CertificateEncodingException {
+        // Happy path: a URL that is present in the SP metadata is accepted.
+        EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
+        SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
+        String registeredUrl = spssoDescriptor.getAssertionConsumerServices().get(0).getLocation();
+
+        assertTrue(openSamlService.isRegisteredAssertionConsumerService(entityDescriptor, registeredUrl));
+    }
+
+    @Test
+    void isRegisteredAssertionConsumerServiceRejectsUnregisteredUrl() throws CertificateEncodingException {
+        // Rejection path (SAML 2.0 §3.4.1.1): a URL not present in the SP metadata is rejected.
+        EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
+
+        assertFalse(openSamlService.isRegisteredAssertionConsumerService(entityDescriptor,
+                "https://attacker.example.com/steal"));
+    }
+
+    @Test
+    void isRegisteredAssertionConsumerServiceRejectsNullUrl() throws CertificateEncodingException {
+        EntityDescriptor entityDescriptor = openSamlService.createSPMetadata();
+
+        assertFalse(openSamlService.isRegisteredAssertionConsumerService(entityDescriptor, null));
+    }
+
+    @Test
+    void isRegisteredAssertionConsumerServiceRejectsWhenNoSpDescriptor() {
+        // An IdP-only descriptor has no SPSSODescriptor, so no ACS can match.
+        EntityDescriptor idpDescriptor = mock(EntityDescriptor.class);
+        when(idpDescriptor.getSPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol")).thenReturn(null);
+
+        assertFalse(openSamlService.isRegisteredAssertionConsumerService(idpDescriptor,
+                "http://localhost:8080/irma-saml-bridge/test/return"));
+    }
 }

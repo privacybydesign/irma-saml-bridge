@@ -52,6 +52,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.time.Instant;
@@ -61,7 +62,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 
 /**
  * Service that initializes the OpenSAML library and provides the base
@@ -72,6 +72,10 @@ import java.util.Random;
 public class OpenSamlService {
 
 	private static final String SAML_BINDINGS_REDIRECT = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
+
+	private static final String SAML_PROTOCOL_NS = "urn:oasis:names:tc:SAML:2.0:protocol";
+
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final ConfigurationService configurationService;
 
@@ -313,11 +317,11 @@ public class OpenSamlService {
 
 			// Our assertion ID refers to the IRMA session.
 			if (disclosure.getToken() != null) {
-				id = disclosure.getToken();
+				id = toSamlId(disclosure.getToken());
 			} else {
 				id = generateId();
 			}
-			assertion.setID("_" + BaseEncoding.base16().encode(id.getBytes()));
+			assertion.setID(id);
 
 			assertion.setSubject(subject);
 			assertion.setIssuer(this.createIssuer());
@@ -343,8 +347,6 @@ public class OpenSamlService {
 					? requestError.getMessage()
 					: "");
 			status.setStatusMessage(statusMessage);
-
-			id = generateId();
 		}
 
 		SubjectConfirmationDataImpl subjectConfirmationData = subjectConfirmationDataBuilder.buildObject();
@@ -360,7 +362,7 @@ public class OpenSamlService {
 
 		status.setStatusCode(statusCode);
 
-		response.setID(id);
+		response.setID(generateId());
 		response.setIssuer(this.createIssuer());
 		response.setIssueInstant(now);
 		response.setInResponseTo(assertParameters.getRequestId());
@@ -371,15 +373,28 @@ public class OpenSamlService {
 	}
 
 	/**
-	 * Generate a random identifier
-	 * 
+	 * Generate a random identifier that is valid for use as a SAML {@code ID}
+	 * attribute (an XML {@code NCName}).
+	 *
 	 * @return A String containing the randomly generated identifier
 	 */
 	private String generateId() {
 		byte[] bytes = new byte[20];
-		Random random = new Random();
-		random.nextBytes(bytes);
-		return new String(Base64.getEncoder().encode(bytes));
+		SECURE_RANDOM.nextBytes(bytes);
+		return "_" + BaseEncoding.base16().encode(bytes);
+	}
+
+	/**
+	 * Wrap an arbitrary value as a valid SAML {@code ID} attribute (an XML
+	 * {@code NCName}). An IRMA session token may start with a digit or contain
+	 * characters that are not permitted in an {@code xs:ID}; hex-encoding with a
+	 * leading underscore guarantees a valid identifier.
+	 *
+	 * @param value The value to wrap.
+	 * @return A valid XML ID string.
+	 */
+	private static String toSamlId(String value) {
+		return "_" + BaseEncoding.base16().encode(value.getBytes());
 	}
 
 	/**
@@ -613,7 +628,7 @@ public class OpenSamlService {
 	 *                         be retrieved from the SignatureValidationService.
 	 */
 	public String findRedirectAssertionConsumerService(EntityDescriptor entityDescriptor) {
-		SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor("urn:oasis:names:tc:SAML:2.0:protocol");
+		SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor(SAML_PROTOCOL_NS);
 
 		if (spssoDescriptor == null) {
 			return null;
@@ -626,5 +641,40 @@ public class OpenSamlService {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Verify that an AssertionConsumerServiceURL requested in an AuthnRequest is
+	 * registered in the SP's metadata.
+	 *
+	 * The SAML 2.0 core spec (§3.4.1.1) requires an IdP to verify a requested
+	 * AssertionConsumerServiceURL against the SP metadata before using it as the
+	 * response destination; otherwise an attacker could redirect the assertion to
+	 * a location of their choosing.
+	 *
+	 * @param entityDescriptor The SP descriptor resolved by the
+	 *                         SignatureValidationService.
+	 * @param url              The requested AssertionConsumerServiceURL.
+	 * @return true if the URL matches a registered AssertionConsumerService
+	 *         location, false otherwise.
+	 */
+	public boolean isRegisteredAssertionConsumerService(EntityDescriptor entityDescriptor, String url) {
+		if (url == null) {
+			return false;
+		}
+
+		SPSSODescriptor spssoDescriptor = entityDescriptor.getSPSSODescriptor(SAML_PROTOCOL_NS);
+
+		if (spssoDescriptor == null) {
+			return false;
+		}
+
+		for (AssertionConsumerService assertionConsumerService : spssoDescriptor.getAssertionConsumerServices()) {
+			if (url.equals(assertionConsumerService.getLocation())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
