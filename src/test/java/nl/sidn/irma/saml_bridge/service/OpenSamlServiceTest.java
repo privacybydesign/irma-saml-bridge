@@ -146,5 +146,4 @@ class OpenSamlServiceTest {
         assertFalse(openSamlService.isRegisteredAssertionConsumerService(idpDescriptor,
                 "http://localhost:8080/irma-saml-bridge/test/return"));
     }
-
 }

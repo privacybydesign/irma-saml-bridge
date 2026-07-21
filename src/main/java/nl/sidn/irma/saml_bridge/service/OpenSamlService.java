@@ -52,12 +52,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.security.SecureRandom;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Map;
@@ -317,11 +317,11 @@ public class OpenSamlService {
 
 			// Our assertion ID refers to the IRMA session.
 			if (disclosure.getToken() != null) {
-				id = disclosure.getToken();
+				id = toSamlId(disclosure.getToken());
 			} else {
 				id = generateId();
 			}
-			assertion.setID("_" + BaseEncoding.base16().encode(id.getBytes()));
+			assertion.setID(id);
 
 			assertion.setSubject(subject);
 			assertion.setIssuer(this.createIssuer());
@@ -347,8 +347,6 @@ public class OpenSamlService {
 					? requestError.getMessage()
 					: "");
 			status.setStatusMessage(statusMessage);
-
-			id = generateId();
 		}
 
 		SubjectConfirmationDataImpl subjectConfirmationData = subjectConfirmationDataBuilder.buildObject();
@@ -364,7 +362,7 @@ public class OpenSamlService {
 
 		status.setStatusCode(statusCode);
 
-		response.setID(id);
+		response.setID(generateId());
 		response.setIssuer(this.createIssuer());
 		response.setIssueInstant(now);
 		response.setInResponseTo(assertParameters.getRequestId());
@@ -375,14 +373,28 @@ public class OpenSamlService {
 	}
 
 	/**
-	 * Generate a random identifier
-	 * 
+	 * Generate a random identifier that is valid for use as a SAML {@code ID}
+	 * attribute (an XML {@code NCName}).
+	 *
 	 * @return A String containing the randomly generated identifier
 	 */
 	private String generateId() {
 		byte[] bytes = new byte[20];
 		SECURE_RANDOM.nextBytes(bytes);
-		return new String(Base64.getEncoder().encode(bytes));
+		return "_" + BaseEncoding.base16().encode(bytes);
+	}
+
+	/**
+	 * Wrap an arbitrary value as a valid SAML {@code ID} attribute (an XML
+	 * {@code NCName}). An IRMA session token may start with a digit or contain
+	 * characters that are not permitted in an {@code xs:ID}; hex-encoding with a
+	 * leading underscore guarantees a valid identifier.
+	 *
+	 * @param value The value to wrap.
+	 * @return A valid XML ID string.
+	 */
+	private static String toSamlId(String value) {
+		return "_" + BaseEncoding.base16().encode(value.getBytes());
 	}
 
 	/**
