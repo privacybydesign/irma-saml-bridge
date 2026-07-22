@@ -347,6 +347,17 @@ public class RequestController {
         if (StringUtils.isEmpty(returnUrl)) {
             log.debug("action=\"request-flow\", debug=\"Using default AssertionConsumerServiceURL from metadata\"");
             returnUrl = this.openSamlService.findRedirectAssertionConsumerService(entityDescriptor);
+        } else if (!this.openSamlService.isRegisteredAssertionConsumerService(entityDescriptor, returnUrl)) {
+            // SAML 2.0 core §3.4.1.1: a requested AssertionConsumerServiceURL must be
+            // registered in the SP metadata before it may be used as the response destination.
+            log.warn("action=\"request-flow\", warning=\"Requested AssertionConsumerServiceURL is not registered in SP metadata\"");
+            return showError(RequestError.builder()
+                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                    .message("Requested AssertionConsumerServiceURL is not registered in SP metadata")
+                    .build(),
+                    request,
+                    response,
+                    model);
         }
 
         if (StringUtils.isEmpty(returnUrl)) {
