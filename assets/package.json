@@ -7,7 +7,7 @@
     "test": "parcel test.html"
   },
   "devDependencies": {
-    "browserslist": "^4.28.2",
+    "browserslist": "^4.29.4",
     "buffer": "^6.0.0",
     "events": "^3.1.0",
     "https-browserify": "^1.0.0",
