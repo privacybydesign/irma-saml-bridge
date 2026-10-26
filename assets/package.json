@@ -18,12 +18,12 @@
     "util": "^0.12.3"
   },
   "dependencies": {
-    "@privacybydesign/yivi-client": "^1.0.0",
+    "@privacybydesign/yivi-client": "^1.0.1",
     "@privacybydesign/yivi-core": "^1.0.0",
     "@privacybydesign/yivi-css": "^1.0.1",
-    "@privacybydesign/yivi-web": "^1.0.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@privacybydesign/yivi-web": "^1.0.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "browserslist": [
     "defaults"
