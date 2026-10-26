@@ -1,52 +1,86 @@
-# Workflow to check whether changes to master fulfill all requirements.
+# Status checks, using the shared workflows from privacybydesign/github-workflows.
+# The gate job "Status checks passed" is the one check to require.
 name: Status checks
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
+  merge_group:
   schedule:
-    # Run every monday on 9:00 in the morning (UTC).
-    - cron: "0 9 * * 1"
-  # Make it possible to trigger the checks manually.
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
+  # There is no shared Java workflow, so Maven builds and tests the bridge here.
+  maven:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-    build:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
 
-        - name: Build Docker image
-          run: docker build .
+      - name: Build and test
+        run: mvn -B --no-transfer-progress clean verify
 
-    analyze:
-      needs: build
-      runs-on: ubuntu-latest
-      permissions:
-        actions: read
-        contents: read
-        security-events: write
-      steps:
-        - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+  # Builds the Yivi frontend bundle in assets/, as the Dockerfile's assets-build stage does.
+  assets:
+    uses: privacybydesign/github-workflows/.github/workflows/node-checks.yml@v1
+    permissions:
+      contents: read
+    with:
+      working-directory: assets
+      node-version: "20" # same as the Dockerfile's assets-build stage
+      scripts: build # "test" starts a Parcel dev server, so it is not run here
+      ignore-scripts: true
 
-        - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
-          with:
-            java-version: '17'
-            distribution: temurin
-            cache: maven
+  # Builds and scans the image without pushing it; Delivery pushes from main.
+  docker:
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+    uses: privacybydesign/github-workflows/.github/workflows/docker-publish.yml@v1
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+      id-token: write
+      attestations: write
+    with:
+      push-image: false
 
-        - name: Initialize CodeQL
-          uses: github/codeql-action/init@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
-          with:
-            languages: java
-            queries: security-and-quality
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    uses: privacybydesign/github-workflows/.github/workflows/dependency-review.yml@v1
+    permissions:
+      contents: read
+      pull-requests: write
 
-        - name: Build with Maven
-          run: mvn -B -DskipTests clean package
+  workflow-lint:
+    uses: privacybydesign/github-workflows/.github/workflows/workflow-lint.yml@v1
+    permissions:
+      contents: read
 
-        - name: Perform CodeQL Analysis
-          uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
-          with:
-            category: "/language:java"
+  passed:
+    name: Status checks passed
+    if: always()
+    needs: [maven, assets, docker, dependency-review, workflow-lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: All required jobs succeeded
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "$RESULTS"
+          if grep -qE '"(failure|cancelled)"' <<< "$RESULTS"; then exit 1; fi
