@@ -810,10 +810,10 @@
     "@parcel/utils" "2.16.4"
     nullthrows "^1.1.1"
 
-"@privacybydesign/yivi-client@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@privacybydesign/yivi-client/-/yivi-client-1.0.0.tgz#9ab7012d7d4d706e4e1db57ab50608f46459ff83"
-  integrity sha512-juWqDD2KCeytycw1AH07HqP6L3GFepHSQa3cyOwP2M8yCzsWml7nVSbAhyfUJnoblq91pcagEA6vVc1xf/5Njg==
+"@privacybydesign/yivi-client@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@privacybydesign/yivi-client/-/yivi-client-1.0.1.tgz#1fc956bdb4ef77cf4c4509fdc5ba8750ec484b4d"
+  integrity sha512-kyXEcTwL0hdFt4rQ9LzENfEd8XMEXptDWerRfmBRDdjORdH0LCCbV+LfE/WDYwawX7Dhy91N9xI7yRePuz70Qg==
   dependencies:
     deepmerge "^4.2.2"
 
@@ -827,10 +827,10 @@
   resolved "https://registry.yarnpkg.com/@privacybydesign/yivi-css/-/yivi-css-1.0.1.tgz#5a65a2e891f95fc3762de314c88f2e0e9e39da49"
   integrity sha512-4cN1cSrgmbm5+syhgFOMV0zW0jJMED1WD0vAGlYKrEhf4vMWIZCE0pwFjRwRDlR+Qgy6fNtgW27Qt8EyF0pkfg==
 
-"@privacybydesign/yivi-web@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@privacybydesign/yivi-web/-/yivi-web-1.0.1.tgz#57c13fe41d2d93ac80fa5342e7e536c34ff1bcbe"
-  integrity sha512-fyVzdmUG0ZNC5IIsU3+daq95EM06LgrJ5F/uLnqzzJZJNfy0p98dt6Gy/nzVPqd3tUAQK+lO5704kGXLO1qDTg==
+"@privacybydesign/yivi-web@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@privacybydesign/yivi-web/-/yivi-web-1.0.3.tgz#45801f17c1dce9a1281ef5e3bf702649ba5f5956"
+  integrity sha512-ljR1FMPeUn/ZTQuBMX2ER8gDYThC+LvLBBuvoDsmH7VcLo5a508DPLlcJqFjVWvlVadzxyctyZEZAgTD5/hxGg==
   dependencies:
     deepmerge "^4.2.2"
     qrcode "^1.4.2"
@@ -1612,22 +1612,22 @@ qs@^6.12.3:
   dependencies:
     side-channel "^1.1.0"
 
-react-dom@^19.0.0:
-  version "19.2.6"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.2.6.tgz#44a81b0bcca22da814c00847d09d01c8615529b7"
-  integrity sha512-0prMI+hvBbPjsWnxDLxlCGyM8PN6UuWjEUCYmZhO67xIV9Xasa/r/vDnq+Xyq4Lo27g8QSbO5YzARu0D1Sps3g==
+react-dom@^19.3.1:
+  version "19.3.1"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.3.1.tgz#b384c53cfcbe9c2a5d09d863b98455de9d68afe2"
+  integrity sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==
   dependencies:
-    scheduler "^0.27.0"
+    scheduler "^0.28.0"
 
 react-refresh@^0.16.0:
   version "0.16.0"
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.16.0.tgz#e7d45625f05c9709466d09348a25d22f79b2ad23"
   integrity sha512-FPvF2XxTSikpJxcr+bHut2H4gJ17+18Uy20D5/F+SKzFap62R3cM5wH6b8WN3LyGSYeQilLEcJcR1fjBSI2S1A==
 
-react@^19.0.0:
-  version "19.2.6"
-  resolved "https://registry.yarnpkg.com/react/-/react-19.2.6.tgz#3dadb8e12b2a7934c1d5317973e5dce1301f9a4d"
-  integrity sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==
+react@^19.3.1:
+  version "19.3.1"
+  resolved "https://registry.yarnpkg.com/react/-/react-19.3.1.tgz#26e9523fc36ea06be5050ebb780249a133260ad7"
+  integrity sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==
 
 readable-stream@^3.6.0:
   version "3.6.2"
@@ -1667,10 +1667,10 @@ safe-regex-test@^1.1.0:
     es-errors "^1.3.0"
     is-regex "^1.2.1"
 
-scheduler@^0.27.0:
-  version "0.27.0"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.27.0.tgz#0c4ef82d67d1e5c1e359e8fc76d3a87f045fe5bd"
-  integrity sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==
+scheduler@^0.28.0:
+  version "0.28.0"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.28.0.tgz#03d3ca348aeaf8b7502f64468f217b27523f9695"
+  integrity sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==
 
 semver@^7.7.1:
   version "7.8.1"
