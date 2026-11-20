@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -45,27 +46,13 @@ func run() error {
 		return err
 	}
 
-	httpServer := &http.Server{
-		Addr:              cfg.listenAddr,
-		Handler:           srv.routes(),
-		ReadHeaderTimeout: readHeaderTimeout,
-		ReadTimeout:       readTimeout,
-		WriteTimeout:      writeTimeout,
-		IdleTimeout:       idleTimeout,
-		MaxHeaderBytes:    maxHeaderBytes,
-	}
-
-	stop, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	go func() {
-		<-stop.Done()
-
-		ctx, cancelShutdown := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancelShutdown()
-
-		_ = httpServer.Shutdown(ctx)
-	}()
+	ln, err := net.Listen("tcp", cfg.listenAddr)
+	if err != nil {
+		return err
+	}
 
 	slog.Info("listening",
 		"addr", cfg.listenAddr,
@@ -74,7 +61,45 @@ func run() error {
 		"sso_url", cfg.constructURL("/request"),
 		"service_providers", srv.registry.Len())
 
-	if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+	return serve(ctx, newHTTPServer(srv.routes()), ln)
+}
+
+func newHTTPServer(handler http.Handler) *http.Server {
+	return &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		IdleTimeout:       idleTimeout,
+		MaxHeaderBytes:    maxHeaderBytes,
+	}
+}
+
+// serve answers requests on ln until ctx is done. It then stops taking new
+// connections and waits, for at most shutdownTimeout, until the requests in
+// flight are answered. Kubernetes sends SIGTERM on every rollout; a login
+// that is in /request or /assert at that moment must still get its answer.
+func serve(ctx context.Context, httpServer *http.Server, ln net.Listener) error {
+	served := make(chan error, 1)
+
+	go func() { served <- httpServer.Serve(ln) }()
+
+	select {
+	case err := <-served:
+		return err
+	case <-ctx.Done():
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	// Serve returns as soon as Shutdown starts. Shutdown itself returns once
+	// the requests in flight are answered, so that is what is waited for.
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		return err
+	}
+
+	if err := <-served; !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
