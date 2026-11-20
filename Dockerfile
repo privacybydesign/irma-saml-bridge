@@ -38,7 +38,11 @@ FROM alpine:3.24 AS runtime
 # "/bin/sh -c scripts/entrypoint.sh". That script creates /usr/local/keys and
 # converts the mounted PEM keys to DER with openssl before it starts the
 # bridge, so the image needs a shell, openssl and a writable /usr/local.
-RUN apk add --no-cache ca-certificates openssl \
+#
+# The packages of the base image are upgraded first: a base image can be
+# weeks behind on fixes, and the image scan fails on a fixable critical one.
+RUN apk upgrade --no-cache \
+    && apk add --no-cache ca-certificates openssl \
     && adduser -D -H -u 65532 nonroot \
     && chown nonroot:nonroot /usr/local
 
