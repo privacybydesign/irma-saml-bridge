@@ -1,15 +1,17 @@
-/artifacts/
-/target/
 /config.json
-.classpath
-.project
-.settings/
 *.crt
 *.der
 *.pub.der
 *.pem
 *.pub.pem
-*.iml
 .idea/
+.DS_Store
 /assets/node_modules
-/src/main/resources/static/assets
+
+# Built from assets/ and embedded into the binary
+/static/assets/*
+!/static/assets/.gitkeep
+
+# Test and build output
+/coverage.out
+/irma-saml-bridge
