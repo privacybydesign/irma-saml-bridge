@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/beevik/etree"
+	"github.com/moov-io/signedxml"
 	dsig "github.com/russellhaering/goxmldsig"
 )
 
@@ -28,6 +30,13 @@ const (
 	timeFormat = "2006-01-02T15:04:05.000Z"
 
 	idAttribute = "ID"
+
+	algExclusiveC14N = "http://www.w3.org/2001/10/xml-exc-c14n#"
+	algEnveloped     = "http://www.w3.org/2000/09/xmldsig#enveloped-signature"
+	algSHA256        = "http://www.w3.org/2001/04/xmlenc#sha256"
+
+	// xsdPrefix is the prefix the Response declares for XML Schema.
+	xsdPrefix = "xsd"
 )
 
 // IdentityProvider signs the Responses of the bridge and describes it in
@@ -85,6 +94,12 @@ type ResponseParams struct {
 // Response is a SAML Response that is being made.
 type Response struct {
 	el *etree.Element
+
+	// inclusivePrefixes are the namespace prefixes that the Response only
+	// uses inside a value, where canonicalization does not see them.
+	inclusivePrefixes string
+
+	signed bool
 }
 
 // NewResponse builds the Response, unsigned. Elements, attributes and their
@@ -97,9 +112,12 @@ func (idp *IdentityProvider) NewResponse(p ResponseParams) *Response {
 	resp := etree.NewElement("saml2p:Response")
 	resp.CreateAttr("xmlns:saml2p", nsProtocol)
 
+	response := &Response{el: resp}
+
 	if p.Success && len(p.Attributes) > 0 {
 		// Only declared when an attribute value is typed xsd:string.
-		resp.CreateAttr("xmlns:xsd", nsXSD)
+		resp.CreateAttr("xmlns:"+xsdPrefix, nsXSD)
+		response.inclusivePrefixes = xsdPrefix
 	}
 
 	setAttr(resp, "Destination", p.ServiceURL)
@@ -124,7 +142,7 @@ func (idp *IdentityProvider) NewResponse(p ResponseParams) *Response {
 			message.SetText(p.StatusMessage)
 		}
 
-		return &Response{el: resp}
+		return response
 	}
 
 	code.CreateAttr("Value", statusSuccess)
@@ -168,7 +186,7 @@ func (idp *IdentityProvider) NewResponse(p ResponseParams) *Response {
 
 		value := attribute.CreateElement("saml2:AttributeValue")
 		value.CreateAttr("xmlns:xsi", nsXSI)
-		value.CreateAttr("xsi:type", "xsd:string")
+		value.CreateAttr("xsi:type", xsdPrefix+":string")
 		value.SetText(p.Attributes[name])
 	}
 
@@ -176,39 +194,135 @@ func (idp *IdentityProvider) NewResponse(p ResponseParams) *Response {
 	authn.CreateAttr("AuthnInstant", instant)
 	authn.CreateElement("saml2:AuthnContext").CreateElement("saml2:AuthnContextClassRef").SetText(authnContextClass)
 
-	return &Response{el: resp}
+	return response
 }
 
-// Sign adds an enveloped XML signature over the whole Response: RSA with
-// SHA-256, exclusive canonicalization and the certificate in KeyInfo. The
-// assertion has no signature of its own; it is covered by this one, as it
-// was in the Java service.
+// Sign adds an enveloped XML signature over the whole Response, the one
+// OpenSAML made: RSA with SHA-256, a SHA-256 digest, exclusive
+// canonicalization and the certificate in KeyInfo. The assertion has no
+// signature of its own; it is covered by this one, as it was in the Java
+// service.
+//
+// The signature is not made here. The Response gets a Signature element
+// without values, and signedxml computes the digest and the signature that
+// the element describes.
 func (idp *IdentityProvider) Sign(r *Response) error {
-	ctx, err := dsig.NewSigningContext(idp.key, [][]byte{idp.cert.Raw})
-	if err != nil {
-		return err
+	if r.signed {
+		return errors.New("the Response is already signed")
 	}
 
-	ctx.IdAttribute = idAttribute
-	ctx.Prefix = "ds"
-	ctx.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList("")
-
-	if err := ctx.SetSignatureMethod(dsig.RSASHA256SignatureMethod); err != nil {
-		return err
-	}
-
-	// Canonicalization rewrites the element it is given: it drops the
-	// xmlns:xsd declaration, which only the value of xsi:type refers to.
-	// The Response that is sent must keep it, so a copy is digested.
-	sig, err := ctx.ConstructSignature(r.el.Copy(), true)
-	if err != nil {
-		return err
-	}
+	id, _ := attr(r.el, idAttribute)
+	template := idp.signatureTemplate(id, r.inclusivePrefixes)
 
 	// The schema wants the Signature right after the Issuer.
-	r.el.InsertChildAt(1, sig)
+	r.el.InsertChildAt(1, template)
+
+	doc := etree.NewDocument()
+	doc.WriteSettings = canonicalWriteSettings
+	doc.SetRoot(r.el)
+
+	signer, err := signedxml.NewSignerFromDoc(doc)
+	if err == nil {
+		signer.SetReferenceIDAttribute(idAttribute)
+		_, err = signer.Sign(idp.key)
+	}
+
+	if err != nil {
+		r.el.RemoveChild(template)
+
+		return err
+	}
+
+	// signedxml declares the ds prefix on SignedInfo a second time. The
+	// declaration on Signature is in scope there, so the copy says nothing
+	// and OpenSAML did not write it.
+	if info := child(template, nsDSig, "SignedInfo"); info != nil {
+		info.RemoveAttr("xmlns:ds")
+	}
+
+	// OpenSAML wrapped the signature value in lines of 76 characters. It is
+	// not part of what is signed, and base64 decoders skip the line breaks.
+	if value := child(template, nsDSig, "SignatureValue"); value != nil {
+		value.SetText(wrapBase64(value.Text()))
+	}
+
+	r.signed = true
 
 	return nil
+}
+
+// wrapBase64 breaks base64 text into lines of 76 characters, the way
+// OpenSAML wrote a SignatureValue: CRLF between lines, LF around them.
+func wrapBase64(text string) string {
+	const width = 76
+
+	var lines []string
+	for len(text) > width {
+		lines = append(lines, text[:width])
+		text = text[width:]
+	}
+
+	lines = append(lines, text)
+
+	return "\n" + strings.Join(lines, "\r\n") + "\n"
+}
+
+// signatureTemplate returns the Signature element for the element with the
+// given ID, with an empty DigestValue and SignatureValue.
+//
+// A prefix that is only used inside a value, as xsd is in
+// xsi:type="xsd:string", is not visibly used, and exclusive canonicalization
+// would leave its declaration out of what is signed. Listing it as an
+// InclusiveNamespaces prefix keeps the declaration in, so that the signed
+// bytes can be read on their own. OpenSAML did the same.
+func (idp *IdentityProvider) signatureTemplate(id, inclusivePrefixes string) *etree.Element {
+	// The line breaks are those OpenSAML wrote. Those inside SignedInfo are
+	// part of what is signed, so with them the signature over a given
+	// Response is the one the Java service made, byte for byte.
+	sig := etree.NewElement("ds:Signature")
+	sig.CreateAttr("xmlns:ds", nsDSig)
+	sig.CreateText("\n")
+
+	info := sig.CreateElement("ds:SignedInfo")
+	info.CreateText("\n")
+	info.CreateElement("ds:CanonicalizationMethod").CreateAttr("Algorithm", algExclusiveC14N)
+	info.CreateText("\n")
+	info.CreateElement("ds:SignatureMethod").CreateAttr("Algorithm", SigAlgRSASHA256)
+	info.CreateText("\n")
+
+	reference := info.CreateElement("ds:Reference")
+	reference.CreateAttr("URI", "#"+id)
+	reference.CreateText("\n")
+	info.CreateText("\n")
+
+	transforms := reference.CreateElement("ds:Transforms")
+	transforms.CreateText("\n")
+	transforms.CreateElement("ds:Transform").CreateAttr("Algorithm", algEnveloped)
+	transforms.CreateText("\n")
+
+	canonicalize := transforms.CreateElement("ds:Transform")
+	canonicalize.CreateAttr("Algorithm", algExclusiveC14N)
+	transforms.CreateText("\n")
+
+	if inclusivePrefixes != "" {
+		inclusive := canonicalize.CreateElement("ec:InclusiveNamespaces")
+		inclusive.CreateAttr("xmlns:ec", algExclusiveC14N)
+		inclusive.CreateAttr("PrefixList", inclusivePrefixes)
+	}
+
+	reference.CreateText("\n")
+	reference.CreateElement("ds:DigestMethod").CreateAttr("Algorithm", algSHA256)
+	reference.CreateText("\n")
+	reference.CreateElement("ds:DigestValue")
+	reference.CreateText("\n")
+
+	sig.CreateText("\n")
+	sig.CreateElement("ds:SignatureValue")
+	sig.CreateText("\n")
+	sig.CreateElement("ds:KeyInfo").CreateElement("ds:X509Data").CreateElement("ds:X509Certificate").
+		SetText(base64.StdEncoding.EncodeToString(idp.cert.Raw))
+
+	return sig
 }
 
 // XML serializes the Response, with the XML declaration the Java service
@@ -217,7 +331,7 @@ func (idp *IdentityProvider) Sign(r *Response) error {
 // the service provider and the digest still matches.
 func (r *Response) XML() ([]byte, error) {
 	doc := etree.NewDocument()
-	doc.WriteSettings = etree.WriteSettings{CanonicalText: true, CanonicalAttrVal: true}
+	doc.WriteSettings = canonicalWriteSettings
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 	doc.SetRoot(r.el.Copy())
 
@@ -226,9 +340,10 @@ func (r *Response) XML() ([]byte, error) {
 
 // Verify checks that data is a Response carrying a valid signature made with
 // the bridge's own key. The Java service did this to every Response before
-// handing it out, and so does the bridge. The validity period of the
-// certificate is not part of the check: a Response is signed whatever the
-// dates in the certificate say, as before.
+// handing it out, and so does the bridge. goxmldsig does the check, which
+// shares no canonicalization code with the library that signed. The validity
+// period of the certificate is not part of the check: a Response is signed
+// whatever the dates in the certificate say, as before.
 func (idp *IdentityProvider) Verify(data []byte) error {
 	doc, err := parseXML(data, maxMetadataBytes)
 	if err != nil {
@@ -252,6 +367,12 @@ func (idp *IdentityProvider) Verify(data []byte) error {
 
 	return nil
 }
+
+// canonicalWriteSettings escape text and attribute values the way
+// canonicalization does. With etree's defaults a carriage return is written
+// as it is, the parser on the other side turns it into a line feed, and the
+// digest no longer matches.
+var canonicalWriteSettings = etree.WriteSettings{CanonicalText: true, CanonicalAttrVal: true}
 
 func setAttr(el *etree.Element, name, value string) {
 	if value != "" {

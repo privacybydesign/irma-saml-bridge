@@ -80,7 +80,6 @@ var (
 	signatureElement = regexp.MustCompile(`(?s)<ds:Signature .*?</ds:Signature>`)
 	randomIDValue    = regexp.MustCompile(`ID="_[0-9A-F]{40}"`)
 	instantValue     = regexp.MustCompile(`\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z`)
-	betweenTags      = regexp.MustCompile(`>\s+<`)
 	base64Content    = regexp.MustCompile(`(<ds:(?:DigestValue|SignatureValue|X509Certificate)>)[^<]*`)
 	referenceURI     = regexp.MustCompile(`URI="#_[0-9A-F]{40}"`)
 )
@@ -101,7 +100,6 @@ func signatureShape(t *testing.T, xml string) string {
 	sig := signatureElement.FindString(xml)
 	require.NotEmpty(t, sig)
 
-	sig = betweenTags.ReplaceAllString(sig, "><")
 	sig = base64Content.ReplaceAllString(sig, "$1")
 
 	return referenceURI.ReplaceAllString(sig, `URI="#_RANDOM"`)
@@ -147,31 +145,83 @@ func TestResponseMatchesJava(t *testing.T) {
 	}
 }
 
-// The signature has the algorithms of the Java service. One thing differs:
-// OpenSAML listed the xsd prefix as an InclusiveNamespaces of the
-// canonicalization, goxmldsig canonicalizes without a prefix list.
+// The signature is the one the Java service made. Each Response in
+// testdata/java is stripped of its signature and signed again with the
+// same key: the whole document must come out as the Java image wrote it.
+// RSA PKCS#1 v1.5 signatures are deterministic, so this compares the
+// digest, the canonical SignedInfo and the signature value, byte for byte.
+func TestSignatureIsByteIdenticalToJava(t *testing.T) {
+	idp := devIdP(t)
+
+	for _, file := range []string{"response-success.xml", "response-failed.xml", "response-cancelled.xml"} {
+		t.Run(file, func(t *testing.T) {
+			java, err := os.ReadFile("../../testdata/java/" + file)
+			require.NoError(t, err)
+
+			doc, err := parseXML(java, maxMetadataBytes)
+			require.NoError(t, err)
+
+			root := doc.Root()
+			sig := child(root, nsDSig, "Signature")
+			require.NotNil(t, sig)
+			root.RemoveChild(sig)
+
+			response := &Response{el: root}
+			if root.SelectAttr("xmlns:xsd") != nil {
+				response.inclusivePrefixes = "xsd"
+			}
+
+			require.NoError(t, idp.Sign(response))
+
+			got, err := response.XML()
+			require.NoError(t, err)
+
+			// etree writes a carriage return as &#xD;, the Java
+			// serializer as &#13;. Both are the same character.
+			assert.Equal(t, string(java), strings.ReplaceAll(string(got), "&#xD;", "&#13;"))
+			require.NoError(t, idp.Verify(got))
+		})
+	}
+}
+
+// What the bridge signs has the shape of what the Java service signed: the
+// same elements, attributes, algorithms and line breaks, and the xsd prefix
+// as an InclusiveNamespaces prefix when the Response declares it.
 func TestSignatureMatchesJava(t *testing.T) {
 	idp := devIdP(t)
 
-	java, err := os.ReadFile("../../testdata/java/response-failed.xml")
-	require.NoError(t, err)
+	for file, params := range map[string]ResponseParams{
+		"response-success.xml":   javaTestLogin(true, ""),
+		"response-failed.xml":    javaTestLogin(false, "x"),
+		"response-cancelled.xml": javaTestLogin(false, "y"),
+	} {
+		java, err := os.ReadFile("../../testdata/java/" + file)
+		require.NoError(t, err)
 
-	failed := signedXML(t, idp, javaTestLogin(false, "x"))
-	assert.Equal(t, signatureShape(t, string(java)), signatureShape(t, failed))
-
-	java, err = os.ReadFile("../../testdata/java/response-success.xml")
-	require.NoError(t, err)
-
-	const inclusive = `<ec:InclusiveNamespaces xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#" PrefixList="xsd"/>`
-
-	javaShape := signatureShape(t, string(java))
-	require.Contains(t, javaShape, inclusive)
+		got := signedXML(t, idp, params)
+		assert.Equal(t, signatureShape(t, string(java)), signatureShape(t, got), file)
+	}
 
 	success := signedXML(t, idp, javaTestLogin(true, ""))
-	assert.Equal(t,
-		strings.Replace(javaShape, `<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">`+inclusive+`</ds:Transform>`,
-			`<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>`, 1),
-		signatureShape(t, success))
+	assert.Contains(t, success, `<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">`+
+		`<ec:InclusiveNamespaces xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#" PrefixList="xsd"/></ds:Transform>`)
+
+	failed := signedXML(t, idp, javaTestLogin(false, "x"))
+	assert.NotContains(t, failed, "InclusiveNamespaces")
+}
+
+// A Response is signed once.
+func TestSignTwiceFails(t *testing.T) {
+	idp := newIdP(t)
+
+	response := idp.NewResponse(javaTestLogin(true, ""))
+	require.NoError(t, idp.Sign(response))
+	require.Error(t, idp.Sign(response))
+
+	xml, err := response.XML()
+	require.NoError(t, err)
+	assert.Equal(t, 1, strings.Count(string(xml), "<ds:Signature "))
+	require.NoError(t, idp.Verify(xml))
 }
 
 func TestResponseSuccessContent(t *testing.T) {

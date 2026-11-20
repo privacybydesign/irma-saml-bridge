@@ -80,7 +80,7 @@ func (idp *IdentityProvider) addSigningKey(role *etree.Element) {
 
 func marshal(root *etree.Element) ([]byte, error) {
 	doc := etree.NewDocument()
-	doc.WriteSettings = etree.WriteSettings{CanonicalText: true, CanonicalAttrVal: true}
+	doc.WriteSettings = canonicalWriteSettings
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 	doc.SetRoot(root)
 

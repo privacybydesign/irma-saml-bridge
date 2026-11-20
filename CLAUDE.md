@@ -29,22 +29,32 @@ keep behaving like it towards the broker.
 - Root: `config.go`, `keys.go`, `server.go` (routes), `request.go`,
   `assert.go`, `testsp.go` (the `/test` endpoints).
 - `testdata/java`: what the Java image answered for config.test.json and
-  dev-keys. `TestResponseMatchesJava`, `TestMetadataMatchesJava` and
-  `TestVerifyAcceptsRequestsSignedByOpenSAML` compare against it.
+  dev-keys. `TestResponseMatchesJava`, `TestSignatureIsByteIdenticalToJava`,
+  `TestMetadataMatchesJava` and `TestVerifyAcceptsRequestsSignedByOpenSAML`
+  compare against it.
 
 ## Gotchas
 
 - Towards the broker nothing may change: entity ID, metadata, SSO URL,
   certificate, NameID, attribute names, what is signed, lifetimes. The
-  metadata is byte for byte that of the Java service, and the Response equal
-  to it outside the signature. Keep `testdata/java` and the tests on it.
+  metadata is byte for byte that of the Java service, and so is a Java
+  Response signed again by `Sign`. Keep `testdata/java` and the tests on it.
 - Only the Response is signed. The Assertion has no signature of its own,
   although the brokers' metadata says `WantAssertionsSigned`. That is how the
   Java service did it and what the broker accepts today.
-- goxmldsig canonicalizes in place. `Sign` gives it a copy of the Response;
-  given the Response itself it strips `xmlns:xsd`, which `xsi:type="xsd:string"`
-  still needs. It also cannot write an `InclusiveNamespaces` prefix list, so
-  the transform has none where OpenSAML wrote `PrefixList="xsd"`.
+- Two XML-DSig libraries, on purpose. moov-io/signedxml signs: it fills in a
+  `Signature` template, and only it can sign with an `InclusiveNamespaces`
+  prefix list, which OpenSAML wrote (`PrefixList="xsd"`, because `xsd` is only
+  used inside the value of `xsi:type`). goxmldsig verifies, in `Verify` and
+  through gosaml2 in the tests. Do not verify with signedxml: its validator
+  takes the first `//Signature` in the document, and nothing here was tested
+  against it. The bridge only verifies its own Responses with XML-DSig;
+  requests carry a query string signature.
+- The line breaks in the template are OpenSAML's. Those inside `SignedInfo`
+  are signed, and with them the signature over a Java Response is the Java
+  signature, byte for byte. Do not reformat the template.
+- signedxml needs etree v1.8.1; goxmldsig and gosaml2 declare v1.7.0 and work
+  with v1.8.1. Go picks the higher one.
 - Serialize with `CanonicalText` and `CanonicalAttrVal`. etree otherwise
   writes a carriage return as it is, the receiver's parser turns it into a
   line feed, and the digest no longer matches.

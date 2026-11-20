@@ -155,9 +155,13 @@ On `/assert`:
 - The request is answered once. Until then it may be loaded again, which a
   phone does when the user comes back from the Yivi app.
 
-Every Response is signed (RSA-SHA256 over the whole Response, exclusive
-canonicalization) and verified with the bridge's own certificate before it
-is handed out.
+Every Response is signed as the Java service signed it: RSA-SHA256 over the
+whole Response, exclusive canonicalization with `xsd` as an
+`InclusiveNamespaces` prefix, the certificate in `KeyInfo`. The Assertion has
+no signature of its own. The signature is made with
+[signedxml](https://github.com/moov-io/signedxml) and checked with
+[goxmldsig](https://github.com/russellhaering/goxmldsig), against the
+bridge's own certificate, before the Response is handed out.
 
 The memory of answered requests is per process. With more than one replica,
 a request answered by one is not known to the others.
