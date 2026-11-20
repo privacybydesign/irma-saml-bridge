@@ -29,6 +29,11 @@ const (
 )
 
 func main() {
+	// The default handler of log/slog writes to standard error, in the
+	// format of package log. The service logs to standard output, as the
+	// Java service did.
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
+
 	if err := run(); err != nil {
 		slog.Error("irma-saml-bridge stopped", "error", err)
 		os.Exit(1)

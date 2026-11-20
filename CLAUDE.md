@@ -89,5 +89,8 @@ keep behaving like it towards the broker.
 - The ops repository (`irma-saml-bridge-ops`) deploys to dev on every pull
   request, and dev runs the `:edge` image with `imagePullPolicy: Always`.
   Changes to it are listed in the pull request here instead of opened there.
+- `main` sets a `log/slog` text handler on standard output. Without it the
+  default handler writes to standard error in the format of package `log`.
+  `TestLogsGoToStandardOutput` runs `main` to check this.
 - Docker Desktop does not share `/private/tmp`: a bind mount from there shows
   up as an empty directory. Copy files into the container with `docker cp`.
