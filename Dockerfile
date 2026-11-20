@@ -1,7 +1,7 @@
 ####################
 # Frontend assets
 ####################
-FROM node:24-slim AS assets
+FROM node:26-slim AS assets
 WORKDIR /app/assets
 
 COPY assets/package.json assets/yarn.lock ./
@@ -14,7 +14,7 @@ RUN yarn run build
 ####################
 # Go build
 ####################
-FROM golang:1.26.11 AS build
+FROM golang:1.27.3 AS build
 WORKDIR /app
 
 COPY go.mod go.sum ./
