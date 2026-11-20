@@ -1,4 +1,3 @@
-version: '3.3'
 services:
   irma:
     image: ghcr.io/privacybydesign/irma:v0.15.0
@@ -43,19 +42,17 @@ services:
   server:
     build: .
     image: sidn-irma-saml-bridge
-    environment:
-      - LOGGING_FILE_PATH=/sidn-irma-saml-bridge/logs
     volumes:
-      - type: volume
-        target: /sidn-irma-saml-bridge/logs
       - type: bind
         source: ./config.test.json
-        target: /root/config.json
+        target: /app/config.json
+        read_only: true
       - type: bind
         source: ./dev-keys
-        target: /root/dev-keys
+        target: /app/dev-keys
+        read_only: true
     ports:
       - "8080:8080"
     networks:
       - default
-    working_dir: /root
+    working_dir: /app

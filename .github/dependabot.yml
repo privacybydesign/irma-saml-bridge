@@ -18,12 +18,12 @@ updates:
       docker: { patterns: ["*"] }
     cooldown: { default-days: 7 }
 
-  - package-ecosystem: maven
+  - package-ecosystem: gomod
     directory: /
     schedule: { interval: weekly, day: monday }
     groups:
-      maven: { patterns: ["*"], update-types: [minor, patch] }
-      maven-security: { applies-to: security-updates, patterns: ["*"] }
+      go: { patterns: ["*"], update-types: [minor, patch] }
+      go-security: { applies-to: security-updates, patterns: ["*"] }
     cooldown: { default-days: 7 }
 
   - package-ecosystem: npm # the Yarn project in assets/

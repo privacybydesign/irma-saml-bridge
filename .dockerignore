@@ -1,0 +1,8 @@
+.git
+.github
+assets/node_modules
+assets/dist
+assets/.parcel-cache
+static/assets/*
+!static/assets/.gitkeep
+config.json

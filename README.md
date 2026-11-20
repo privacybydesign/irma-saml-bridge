@@ -1,245 +1,249 @@
 # irma-saml-bridge
-IRMA-SAML bridge enabling IRMA as a Service via the Signicat Identity Broker. It acts as a SAML Identity Provider, giving access to IRMA credentials as SAML attributes.
 
-In the `docs` directory you can find a [flow diagram](docs/flow_diagram.pdf) and [endpoint documentation](docs/endpoints.pdf).
+A SAML 2.0 identity provider that lets a user log in by disclosing attributes
+with the Yivi app. It makes Yivi available through the Signicat identity
+broker: the broker sends a SAML AuthnRequest, the bridge runs a disclosure
+session at an IRMA server, and the broker gets a signed SAML Response with
+the disclosed attributes.
 
-## Quick start
-### Setup
-You require `docker` to be installed, including `docker-compose`. This setup was tested on **Ubuntu 20.04 LTS**.
+The bridge is a Go service. It used to be a Java 17 service built on Spring
+Boot and OpenSAML; the Go service serves the same endpoints, reads the same
+`config.json` and sends the same metadata and Responses.
+
+In the `docs` directory you can find a [flow diagram](docs/flow_diagram.pdf)
+and [endpoint documentation](docs/endpoints.pdf), both written for the Java
+service.
+
+## How a login goes
+
+1. The broker redirects the browser to `/request` with a signed AuthnRequest
+   (HTTP-Redirect binding).
+2. The bridge checks the request, starts a disclosure session at the IRMA
+   server and answers with a page that shows the QR code.
+3. The user discloses with the Yivi app. The page fetches the signed session
+   result from the IRMA server and posts it to `/assert`.
+4. The bridge checks the result and answers with a signed SAML Response,
+   which the page posts to the broker's AssertionConsumerService.
+
+When something goes wrong after step 2, the page asks `/errorassert` for a
+Response with the status `Responder` / `AuthnFailed` and posts that instead.
+
+The bridge keeps no session. What it needs to remember between steps 2 and 4
+travels through the browser in a JWT it signs itself.
+
+## Endpoints
+
+All paths are below the context path, `/irma-saml-bridge` by default.
+
+| Path | Purpose |
+| --- | --- |
+| `GET /request` | Takes the AuthnRequest and shows the page with the QR code |
+| `POST /assert` | Turns an IRMA session result into a SAML Response |
+| `POST /errorassert`, `POST /errorassert/abort` | Make a Response for a failed or cancelled login |
+| `POST /report` | Logs an error that happened in the browser |
+| `GET /metadata` | SAML metadata of the identity provider |
+| `GET /assets/…` | Script and style sheet of the page |
+| `GET /actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` | Probes, in the format of Spring Boot's actuator |
+| `/test/…` | A built-in service provider for testing, see [below](#testing-without-a-broker) |
+
+The service listens on plain HTTP on port 8080. TLS is terminated in front of
+it.
+
+## Configuration
+
+### Environment
+
+| Variable | Description |
+| --- | --- |
+| `CONFIG_PATH` | Path of the configuration file. Defaults to `./config.json` |
+| `SERVER_SERVLET_CONTEXT_PATH` | Path the service is served under. Defaults to `/irma-saml-bridge` |
+| `SERVER_PORT` | Port to listen on. Defaults to `8080` |
+
+The names are those the Java service read. There, `CONFIG_PATH` was a JVM
+system property (`java -DCONFIG_PATH=…`); it is an environment variable now.
+
+### config.json
+
+| Key | Description |
+| --- | --- |
+| `issuerName` | Entity ID of this identity provider. Defaults to `host` |
+| `host` | Host the bridge is reached on, with port if needed. Used for the URLs in the metadata |
+| `postfix` | Path after the host, normally the same as the context path |
+| `httpsUsed` | Whether the bridge and the IRMA server are reached over https. Defaults to `true` |
+| `jwtPrivateKeyPath` | RSA private key that signs the session requests for the IRMA server. The IRMA server has its public half as the key of the requestor named `issuerName` |
+| `irmaPublicKeyPath` | RSA public key of the IRMA server, which verifies its session results |
+| `testIrmaPrivateKeyPath` | RSA private key that plays the IRMA server for `/test/assert`. Leave it `null` in production |
+| `samlCertificatePath` | Certificate that is published in the metadata and in every Response |
+| `samlPrivateKeyPath` | RSA private key of that certificate, which signs the Responses |
+| `samlMetadataPath` | Directory with the metadata of the service providers that may use the bridge |
+| `requestTtlInSec` | How old an AuthnRequest may be. Defaults to 360 |
+| `responseTtlInSec` | How long an assertion is valid. Defaults to 360 |
+| `defaultCondiscon` | What to ask the user for when the request does not say. Required |
+| `defaultMap` | The IRMA server to use: `host` is the host the browser and the app reach it on, `irmaServiceHost` the host the bridge calls, `postfix` the path after either. `{spName}` in `host` and `postfix` is replaced by the `ProviderName` of the request, in lower case, or `test`. Required |
+| `irmaMapping` | The same per service provider, by `ProviderName` in lower case |
+| `irmaServerTlsInsecureSkipVerify` | Do not verify the certificate of the IRMA server. The Java service never did. Leave it out unless the IRMA server cannot present a valid certificate |
+
+Keys are read as DER, the format the Java service needed, or as PEM. Private
+keys may be PKCS#8 or PKCS#1. The service does not start when a file is
+missing, when the SAML key does not belong to the certificate, or when a
+metadata file cannot be read.
+
+See [config.default.json](config.default.json) and
+[config.test.json](config.test.json) for examples.
+
+### Service provider metadata
+
+Every file in `samlMetadataPath` is read at startup: one `EntityDescriptor`,
+or an `EntitiesDescriptor` with several. Files whose name starts with a dot
+and directories are skipped. Restart the service after changing a file.
+
+A service provider is known by its `entityID`. Its requests are verified
+with the certificates its `SPSSODescriptor` lists for signing, and a
+Response only goes to one of its `AssertionConsumerService` locations.
+Metadata past its `validUntil` is not used. The signature on a metadata file
+is not checked: a file is trusted because it is in the directory.
+
+## What a request may ask
+
+The attributes to disclose are a condiscon, as in an
+[IRMA session request](https://irma.app/docs/condiscon/). A request can
+carry it in six ways:
+
+1. Not at all: `defaultCondiscon` is used.
+2. `md:RequestedAttribute` elements named after attribute identifiers, in a
+   `req-attr:RequestedAttributes` extension. The attributes of one
+   credential are asked together.
+3. A `md:RequestedAttribute` named `condiscon` in that extension, with the
+   condiscon as JSON in an `AttributeValue` of type `xs:string`.
+4. The same, named `signicat:param:condiscon`, as the Signicat broker sends
+   it.
+5. A plain `saml:Attribute` named `condiscon` in the `Extensions`.
+6. The condiscon as JSON in the `Format` of the `NameIDPolicy`.
+
+In the Response every disclosed attribute is a `saml:Attribute` named after
+its attribute identifier. The `NameID` is the value of the first attribute by
+identifier.
+
+## What is checked
+
+On `/request`:
+
+- The query is read once: the request that is verified is the request that
+  is used. A repeated `SAMLRequest`, `RelayState`, `SigAlg` or `Signature`
+  is refused.
+- The inflated request is at most 128 KiB of XML without a document type
+  declaration. There are no entities to expand and nothing external to
+  fetch.
+- The request is an AuthnRequest with an `ID`, `Version="2.0"` and an
+  `IssueInstant` that is at most `requestTtlInSec` old.
+- The `Issuer` is a service provider with valid metadata, and the query
+  string signature (`SigAlg` RSA with SHA-256, SHA-384 or SHA-512) verifies
+  with one of its signing keys. An unsigned request is refused.
+- An `AssertionConsumerServiceURL` is one of the service provider's
+  endpoints. Without one, its endpoint with the HTTP-Redirect binding is
+  used.
+- The request was not answered before.
+
+On `/assert`:
+
+- The session result is a JWT signed with the key in `irmaPublicKeyPath`,
+  and it has not expired.
+- The parameters are a JWT the bridge signed for this purpose.
+- The proof status is `VALID`, the disclosed attributes satisfy the
+  condiscon of the request, and the result comes from the IRMA session that
+  was started for this request.
+- The request is answered once. Until then it may be loaded again, which a
+  phone does when the user comes back from the Yivi app.
+
+Every Response is signed as the Java service signed it: RSA-SHA256 over the
+whole Response, exclusive canonicalization with `xsd` as an
+`InclusiveNamespaces` prefix, the certificate in `KeyInfo`. The Assertion has
+no signature of its own. The signature is made with
+[signedxml](https://github.com/moov-io/signedxml) and checked with
+[goxmldsig](https://github.com/russellhaering/goxmldsig), against the
+bridge's own certificate, before the Response is handed out.
+
+The memory of answered requests is per process. With more than one replica,
+a request answered by one is not known to the others.
+
+## Build and test
 
 ```bash
-$ sudo apt install docker.io docker-compose
+go vet ./...
+go test -race ./...
 ```
 
-Firstly run `ngrok` or similar such that the IRMA instance to use is accessible from the internet.
+The tests run the whole service against a service provider and an IRMA
+server that the test plays; no network or Docker is needed.
 
-This step is unnecessary if you use a pre-existing IRMA instance, or if your development machine is accessible by your phone from the local network.
+The page needs `static/assets/app.js` and `static/assets/app.css`. They are
+built from `assets/` by the node stage of the Dockerfile and are not in the
+repository. To build them yourself, with Node.js and Yarn installed:
 
 ```bash
-$ ngrok http 8081
+assets/build.sh
 ```
 
-Copy the **HTTPS url** (for example: https://9dac70c8cabf.ngrok.io) into `config.test.json` (see example below) and set the URL in the Docker Compose configuration for the IRMA instance as `--url=https://9dac70c8cabf.ngrok.io`.
+### With Docker
 
-```json
-{
-	"issuerName": "sidn-irma-saml-bridge",
-	"host": "localhost:8080",
-	"postfix": "/irma-saml-bridge",
-	"jwtPrivateKeyPath": "./dev-keys/jwt.der",
-	"testIrmaPrivateKeyPath": "./dev-keys/irma-test.der",
-	"irmaPublicKeyPath": "./dev-keys/irma-test.pub.der",
-	"samlCertificatePath": "./dev-keys/idp.crt",
-	"samlPrivateKeyPath": "./dev-keys/idp.der",
-	"samlMetadataPath": "./dev-keys/metadata",
-    "httpsUsed": false,
-    "requestTtlInSec": 900,
-    "responseTtlInSec": 900,
-	"defaultMap": {
-		"host": "9dac70c8cabf.ngrok.io",
-		"irmaServiceHost": "9dac70c8cabf.ngrok.io",
-		"postfix": ""
-	},
-	"irmaMapping": {
-		"test": {
-			"host": "9dac70c8cabf.ngrok.io",
-			"irmaServiceHost": "9dac70c8cabf.ngrok.io",
-			"postfix": ""
-		}
-	}
-}
-```
+Run an IRMA server that your phone can reach, set its address in
+`config.test.json` (`host` and `irmaServiceHost`) and in the `--url` option
+of the IRMA server in [docker-compose.yml](docker-compose.yml), and start
+everything:
 
-Now initialize the various crypto keys, build assets and run the project:
 ```bash
-$ docker-compose up
+docker compose up --build
 ```
 
-By default, `docker-compose` caches docker images, so on a second run the previous built images will be used. A fresh build can be enforced using the `--build` flag.
-```bash
-$ docker-compose up --build
-```
+### Testing without a broker
 
-#### Without `ngrok`
-To run the Docker setup without `ngrok`, we need to change three minor things:
- * Make the `--url` option of the IRMA server configuration in [docker-compose.yml](./docker-compose.yml) use the URL of your choice (for example `http://192.168.0.2:port`)
- * Update the IRMA server domain in [config.test.json](./config.test.json) to the domain of the `--url` option from your IRMA server configuration (see above). In here, use the port of the IRMA server (8089). The NGINX middleware is not necessary for localhost configurations. Make sure you update all `"host"` and `"irmaServiceHost"` fields.
+The `/test` endpoints play the service provider:
 
-### Building manually
-We have a bash script for building the `sidn-irma-saml-bridge` manually. As prerequisite for this script, you need to install Maven for OpenJDK 17, Node.js and `yarn` first.
-```bash
-$ bin/build.sh
-```
+| Path | Purpose |
+| --- | --- |
+| `GET /test/metadata` | Metadata of the test service provider |
+| `GET /test/request` | Sends a signed AuthnRequest to `/request` |
+| `POST /test/return` | Where the Response for a test request goes. It is not verified |
+| `GET /test/assert` | Plays a complete login and shows the Response as XML. Needs `testIrmaPrivateKeyPath` |
+| `POST /test/errorassert`, `/test/errorassert/abort` | The same for a failed login |
 
-After building, the JAR artifact can be found in the `./artifacts/` directory.
+The bridge refuses the test service provider like any other until its
+metadata is in the metadata directory:
 
-You can also check the `Dockerfile` for details on how to build and run.
-
-### Project integration test
-We will now proceed by testing your configuration and setup by integrating with a mock-up SAML Service Provider.
-
-First you need to register this SAML Service Provider, by copying its metadata to the appropriate folder.
 ```bash
 curl -o ./dev-keys/metadata/sidn-irma-saml-bridge.xml http://localhost:8080/irma-saml-bridge/test/metadata
 ```
 
-Note that you need to restart the project for the configuration change to take hold immediately.
+Restart, and open http://localhost:8080/irma-saml-bridge/test/request. You
+should see the QR code. Scan it with the Yivi app in developer mode. After
+disclosing you land on a page that says the response was received but not
+verified.
 
-```bash
-docker-compose down
-docker-compose up
-```
+`/test/request` makes one request per request form:
 
-You can now visit [the test endpoint](http://localhost:8080/irma-saml-bridge/test/request) with your browser.
-This endpoint initiates the Service Provider so-called Authentication Request to our IRMA SAML bridge Identity Provider.
-You will be redirected immediately. An overview of all the different test endpoints can be found [below](#test-endpoint-overview).
+| Request form | URL |
+| --- | --- |
+| Default | `/test/request` |
+| Requested attributes | `/test/request?mode=attributes&request=["irma-demo.sidn-pbdf.email.email","irma-demo.sidn-pbdf.mobilenumber.mobilenumber"]` |
+| Condiscon | `/test/request?mode=condiscon&request=[[["irma-demo.sidn-pbdf.email.email"]],[["irma-demo.sidn-pbdf.mobilenumber.mobilenumber"]]]` |
+| Condiscon, Signicat name | `/test/request?mode=condiscon-signicat&request=…` |
+| Condiscon in the NameIDPolicy | `/test/request?mode=condiscon-nameid&request=…` |
+| Condiscon in an Attribute | `/test/request?mode=condiscon-attribute&request=…` |
 
-Now you should see an IRMA QR code. If not, something is wrong with your setup. Note that you have to enable **developer mode** in the IRMA app before scanning this QR code will work (as the IRMA instance is not running in Production mode). Scan the QR-code and issue your name.
+Add `fake-issuer` for a request from an unknown service provider and
+`old-request` for one that is a day old. Both must be refused.
 
-You should not at any time encounter a (red) error screen during this process.
+## Deployment
 
-You will redirected to a page with the following text:
-```
-This is a placeholder page to which you have been redirected. No SAML response was verified. It is fine to see this page when testing.
-```
+The image is `ghcr.io/privacybydesign/irma-saml-bridge`: the binary at
+`/irma-saml-bridge` on Alpine, running as an unprivileged user. It contains
+a shell and `openssl` because
+[irma-saml-bridge-ops](https://github.com/privacybydesign/irma-saml-bridge-ops)
+starts the container with a script that converts the mounted PEM keys to DER
+before it starts the bridge.
 
-This placeholder page does not test the consumption of the SAML response, only the consumption of a valid SAML Authentication Request. For an end-to-end test, we will now integrate with a public service.
+Logs go to standard output. There is no log file.
 
-#### Test endpoint overview
-The SAML bridge supports multiple request formats for different Signicat use cases. Below you can find an overview of the different request formats with a URL to generate a test request using that format.
-
-- Default request format (uses RequestedAttributes extension without any specific attributes being requested; this means `defaultCondiscon` from the configuration is used)
-
-  https://localhost:8080/irma-saml-bridge/test/request
-
-- RequestedAttributes extension
-
-  https://localhost:8080/irma-saml-bridge/test/request?mode=attributes&request=%5B%22irma-demo.sidn-pbdf.email.email%22%2C%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D
-
-- Condiscon extension (`<md:RequestedAttribute Name="condiscon" ...>...</md:RequestedAttribute>`)
-
-  https://localhost:8080/irma-saml-bridge/test/request?mode=condiscon&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
-
-- Condiscon extension for Signicat NextGen broker (`<md:RequestedAttribute Name="signicat:param:condiscon" ...>...</md:RequestedAttribute>`)
-
-  https://localhost:8080/irma-saml-bridge/test/request?mode=condiscon-signicat&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
-
-- Condiscon via NameID
-
-  http://localhost:8080/irma-saml-bridge/test/request?mode=condiscon-nameid&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
-
-- Condiscon via `<Attribute/>` element
-
-  https://localhost:8080/irma-saml-bridge/test/request?mode=condiscon-attribute&request=%5B%5B%5B%22irma-demo.sidn-pbdf.email.email%22%5D%5D%2C%5B%5B%22irma-demo.sidn-pbdf.mobilenumber.mobilenumber%22%5D%5D%5D
-
-You can change the condiscons and attribute requests in the URLs above to do other types of requests.
-
-### SAMLtest
-First, you must establish a metadata link between your IdP and the SAMLtest Service Prodiver by using the [upload form](https://samltest.id/upload.php). Upload the [metadata file](http://127.0.0.1:8080/irma-saml-bridge/metadata) to this form.
-
-You may need to change the following properties in the metadata file:
-* the `entityID`, if it is already registered with SAMLtest.
-* the `NameIDFormat` to `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`, as we use this field not as it was intended for.
-* the `SingleSignOnService` to use the `http` (non-HTTPS) path, i.e. http://localhost:8080/irma-saml-bridge/request, as our server can not respond with HTTPS.
-
-Secondly we need to trust the SAMLtest Service Provider by adding their metadata to our folder.
-``` bash
-curl -o ./dev-keys/metadata/samltest.xml https://samltest.id/saml/sp
-```
-
-Again, you need to restart the project for the configuration change to take hold immediately.
-
-```bash
-docker-compose down
-docker-compose up
-```
-
-You can now perform the test by going to https://samltest.id/start-idp-test/, and by entering `sidn-irma-saml-bridge` or whatever you changed the `entityID` to. Again, scan the QR and you will be redirected. It is not possible (anymore) to view the disclosed credentials using this service.
-
-## Development with IntelliJ IDEA Ultimate
-For development you may use any environment you please, but this guide restricts solely to the paid IntelliJ IDEA Ultimate environment.
-
-1. Open this project in IntelliJ, wait for the indices to be built, and open **Run** > **Edit Configurations**.
-2. Run 'mvn clean install' to import all dependencies
-3. Start IrmaSamlBridgeApplication configuration
-
-You now still need to use an IRMA instance to talk to. You can use the IRMA instance as provided by the docker-compose file, but you will need to run your TomEE instance on a different port if you do so. You can change this port in the **Server** tab under **HTTP port**. Do not forget to change the `host` entry in your configuration file appropriately.
-
-## Configuration options
-The IRMA SAML bridge can be configured with a file called `config.json` in the current working directory. You can also use the environment variable `CONFIG_PATH` like `-DCONFIG_PATH='./config.json'` to use a path other than the current working directory for this file.
-But it also possible to put the application.yaml and config.json in a config directory in the classpath
-**Note:** when not using `CONFIG_PATH` you probably need to change the working directory of your Tomcat instance to the directory containing your locally checked out git repository for the IRMA SAML bridge.
-
-In the JSON file add the following key-value pairs:
-
-These keyfiles need to be referred to by the bridge. You can set the following values in this configuration file:
-* `issuerName`: The issuerName for this SAML Identity Provider. When unset/null will use host. This issuerName will be used as EntityID in the SAML session.
-* `host`: the default host for this IRMA SAML bridge. Emitted in metadata files, tests etc. May be overridden in specific metadata files if so desired.
-* `postfix`: path after the hostname for this IRMA SAML bridge.
-* `jwtPrivateKeyPath`: the RSA private key used by this bridge in DER format.
-* `testIrmaPrivateKeyPath`: the RSA private key possibly used by this bridge to simulate IRMA go messages in DER format. May be NULL (i.e. in production).
-* `irmaPublicKeyPath`: the RSA public key used by IRMA Go in DER format.
-* `samlCertificatePath`: the certificate used to sign SAML responses and assertions.
-* `samlPrivateKeyPath`: the RSA private key used to sign SAML responses and assertions in DER format.
-* `samlMetadataPath`: a folder containing all metadata files.
-* `httpsUsed`: should https used for the connection with the IRMA server, default is true
-* `requestTtlInSec` ttl for the request in seconds, default is 360
-* `responseTtlInSec` ttl for the request in seconds, default is 360
-* `defaultCondiscon`: the default condiscon to use when the client does not provide one. This option is mandatory.
-* `defaultMap`: Default IRMA host to use when no SAML issuer was matched in the irmaMapping. You can use `{spName}` to provide a dynamic mapping for wildcard hostnames or postfixes.
-* `irmaMapping`: a dictionary which specifies for each SAML issuer what IRMA host should be used. Uses the Issuer field in Authnrequests, and uses entityID from the metadata files to make a match.
-
-Such a file will look as follows:
-```json
-{
-	"issuerName": null,
-	"host": "localhost:8080",
-	"postfix": "/irma-saml-bridge",
-	"jwtPrivateKeyPath": "./dev-keys/jwt.key",
-	"testIrmaPrivateKeyPath": "./dev-keys/irma.key",
-	"irmaPublicKeyPath": "./dev-keys/irma.key.pub",
-	"samlCertificatePath": "./dev-keys/idp.crt",
-	"samlPrivateKeyPath": "./dev-keys/idp.key",
-	"samlMetadataPath": "./dev-keys/metadata",
-    "httpsUsed": false,
-    "requestTtlInSec": 900,
-    "responseTtlInSec": 900,
-	"defaultCondiscon": [
-		[
-			[
-				"pbdf.gemeente.personalData.fullname"
-			]
-		]
-	],
-	"defaultMap": {
-		"host": "{spName}.irma-brug.example.com",
-		"irmaServiceHost": "irma-brug.example.com",
-		"postfix": ""
-	},
-	"irmaMapping": {
-		"klant": {
-			"host": "irma.klant.nl",
-			"irmaServiceHost": "irma-brug.example.com",
-			"postfix": "/"
-		}
-	}
-}
-```
-## logging
-Default location of logging is in the directory /logs.
-The location can be changed by setting the logging.file.path during startup with JVM parameter -Dlogging.file.path=/whatever/path
-
-## Health
-To check if the application is UP, goto http://localhost:8080/irma-saml-bridge/actuator/health
-```
-{
-   "status":"UP",
-   "groups":[
-      "liveness",
-      "readiness"
-   ]
-}
-```
-The health endpoints http://localhost:8080/irma-saml-bridge/actuator/health/liveness or http://localhost:8080/irma-saml-bridge/actuator/health/readiness can be used in tools like Kubernetes 
-## In production
-When running the sidn-irma-saml-bridge in production, you are required to generate your own key material analog to the development keys in the `dev-keys` directory. The `openssl` commands to generate these keys are documented in [`bin/init.sh`](bin/init.sh).
+Generate your own keys for production, as the development keys in
+`dev-keys` were made with [`bin/init.sh`](bin/init.sh). The key in
+`jwtPrivateKeyPath` must be the one the IRMA server knows the requestor by.
