@@ -86,9 +86,16 @@ keep behaving like it towards the broker.
   repository starts the container with `scripts/entrypoint.sh`, which runs
   `mkdir /usr/local/keys` and `openssl rsa`. Do not move to distroless
   before that script is gone.
-- The ops repository (`irma-saml-bridge-ops`) deploys to dev on every pull
-  request, and dev runs the `:edge` image with `imagePullPolicy: Always`.
-  Changes to it are listed in the pull request here instead of opened there.
+- Deploying is done by the ops repository (`irma-saml-bridge-ops`). A pull
+  request there only runs `terraform plan`. A merge to its `main` applies to
+  int and prod at once; dev is only applied by starting its deploy workflow
+  by hand. dev runs `:edge` with `imagePullPolicy: Always`, so it gets every
+  merge here at its next pod restart; int and prod run a version tag.
+- `scripts/entrypoint.sh` in the ops repository is the pod's command and is
+  shared by all environments. Changing it rolls out new pods in every
+  environment it is applied to, prod included, whatever image tag that
+  environment runs. Its last line starts `/irma-saml-bridge` or, in a 1.x
+  image, `java -jar`.
 - `main` sets a `log/slog` text handler on standard output. Without it the
   default handler writes to standard error in the format of package `log`.
   `TestLogsGoToStandardOutput` runs `main` to check this.
