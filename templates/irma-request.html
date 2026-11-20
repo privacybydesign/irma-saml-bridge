@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1"/>
+        <title>Yivi SAML bridge</title>
+        <link rel="stylesheet" type="text/css" href="assets/app.css">
+    </head>
+    <body>
+        <script>
+            window.LANGUAGE = {{.Language}};
+            window.IRMA_SERVER = {{.IrmaServer}};
+            window.ASSERT_URL = {{.AssertURL}};
+            window.ERROR_ASSERT_URL = {{.ErrorAssertURL}};
+            window.ASSERT_PARAMETERS = {{.AssertParameters}};
+            window.ERROR = {{.Error}};
+            window.ERROR_URL = {{.ErrorURL}};
+            window.SESSION_DATA = {{.SessionData}};
+        </script>
+
+        <noscript>
+            <p>For the use of this application you need to enable Javascript.</p>
+        </noscript>
+
+        <div id="root"></div>
+
+        <script type="module" src="assets/app.js"></script>
+    </body>
+</html>

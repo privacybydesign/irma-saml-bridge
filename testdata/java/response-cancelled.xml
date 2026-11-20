@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><saml2p:Response xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" Destination="http://test" ID="_D755D18AFB18B2B7B85C3330A7CE525EE1C68D9D" InResponseTo="0" IssueInstant="2026-11-20T09:22:31.584Z" Version="2.0"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">sidn-irma-saml-bridge</saml2:Issuer><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference URI="#_D755D18AFB18B2B7B85C3330A7CE525EE1C68D9D">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>bKC66WLbcssPW8LwuTG88pRz4cLrhcb9nylf0Nk5QN4=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+kiyIjvZu31e2gzGWPYwXvMltdZKNFae/rIXbUTobKVvDSk+0cgqOEW+rF4sLRPJxf70G9oEKkg5p&#13;
+I84TWiBgKSmyE/EMChrfTpMsI+h5OQrm10XjYvQLWWFTN5Ds8gq7xIeEE8zFac9ogf+0L+Ro+Ons&#13;
+9q/1Gds5oWta7UFenS65E47/Zs05CwHtfynURJyoEzEmOSxQqwIdXnLD+RrYSXMtzqQkLt07xWEW&#13;
+GrYLxL3ROecFu6ujgQTgrvgUNgx3jD7Bfsn6MIiS7ChR+x5+IxLxCPjWxagbFzlWIVgTj0mNDSRT&#13;
+g3CukR+Iuk1e9MKsmai8BcRLwm5IVkCSCMCQ2XOwF+X4clVkf7jivK8Xap1j1XC2M+mwUO2zlBNu&#13;
+dlhDlHSFVSlcLGcfoiCLyeKP3gP6D9xP8yzGsMqLIOX5lCDmAvYiEso+Q31laZcHQVhRGdP/V3HP&#13;
+uVGrsYDknx+dzL0YY0LHwhpT9+IWvrobxwoF5m++Qub2YKjuaUviwTVIHApxcWgOOSK3nQ+OCFIW&#13;
+MJ/miFDN8J2x0odAR3EJZeKBhCS37/ZVLh0sySuaLhhUGo/TgLaiNOLm14rstfpZ2SuPBASNzIki&#13;
+aue8zP6O0XDG4Mf3y1740wKIN3j0IxBrA6d04ETGIZhH/09J8/ybaKMb6epmMyxNUQtZFNFgxFY=
+</ds:SignatureValue>
+<ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIFazCCA1OgAwIBAgIUArmbbiMPcfIRvceJBQzyvx0d2j4wDQYJKoZIhvcNAQELBQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yMTAzMTcyMTAzMzlaFw0yMjAzMTcyMTAzMzlaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCuIk2jp8qmitrzVzxQaHj1oJM+unJliNKcDjZkMRc4bSsVrNY64L/5yaMVqK+ATUJyZcOftafJmUOAY31ziuUDDAtJaeUp3acFq/8M1kyrQBsYBA0MMG80XtViS2crRy3i6bq15e4lUjioJCV3oHkzDQUnKLflFj2OEnKBFRNcltyMWOfeMyeE1gGSaRQUVQL0hpygYtriprsfOnOzJ1OljoBLaGQg+CxLMCNNUXPo89WFkJviNqs03iM7FREPULYXTuCn0WX5pvcz4F4N2n7gnz/OcRGz5nGEixbwzjS/tVi5DUM7zsC+4k4D9bgeMgvl2J90Iv3RZwvINKKKMU1KGCf9hp6liZDNhVUUnqcM6Gdtzvvy1FTcLxjoYRYv013Q/G3TgZ00BxPfZBWIG1p2KV4tbsl5R63zdmnqgu4rlPVJuASpwOFaLUnfcGdkv/qC9DkZ6RDF7WKTBQ9SlCE3NBRXkM3cZ9t14DbyNjFgEFFhBJAeZJU0he/YkLs9hpEItAbf98K9UQ4BtEOCvmxx6ZV0r1g+phtF/xgm1hRYkejV9zW6fXISKrh/9QihMffu3RGwNw4/6MeeerMRyJoP6fQAK/J59nGHmTQjTyJnnyH3kI30GcyQzkeGuNUmdGZgYmMxU9X+CkP5Yu/KEvTYC2B6Ey5iwrN6FfirNkrV/wIDAQABo1MwUTAdBgNVHQ4EFgQUtwpc1n7Weia9iZJvzoYz8A3zODMwHwYDVR0jBBgwFoAUtwpc1n7Weia9iZJvzoYz8A3zODMwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAgEAaBITkuWfu37A9npmYxdtd9X/6c8LqHaw2BP40p0WLNTGNf0sVvSAG4ONEK/jxGqtHmh0MPu0cTEgm5Gx+QGVEK6cfrMibAKlG23yNW93fxT0tnZ5S52blstz+O3ysnzeb2KnqURwUWe3z8iZpjZTl/E8r2pcKnlmzO3CaciW2BU0qhTeE3rgyEztyAo7vAv9UnjbFqf0XO+5/ozTgooUiB1uR7BTMLotEQ5BBupvin9b27hy9Glxs+kbCh5AKqTjDqpuN+0Xu6yXMCWwmxRgREnY1arw+pMbBBuNyPJ+synkW1RbEL3fgb09LIaRBgDWXPIRgCG4yRq3T+aalcdeCy0hHZ9lNaNzbyx9Bzi5TkPNkTiQRTZUcoMKefMQ0R8MZKdscY9S+aRQpcXWDevXWK2O/VCbWdxfWHeelQrEppz0JMUn3+w/HkLz5NVLz+4TY6IC3jxjt3xPwCmtZeU9ZY2nnDbZT8uWCiVsJj4fsfFs4/YDcVzlaK8r1YUA5fyOT2facOS5MT0jyPBKUif3kphTlBgS0WBgyi4MYnZYcNq+xyIs89xrgELFmNl2NYn9l7W0QR7KR5mXYooH/V6DR3A7Z5Ic51fEgjVwDO2WIAKHfIyRY04cBrsopuTDfn9bSPZbklr/PIbF4hXpUXPOEx9Oonowgq58UlT/njDuFxw=</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature><saml2p:Status><saml2p:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Responder"><saml2p:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:AuthnFailed"/></saml2p:StatusCode><saml2p:StatusMessage>The user cancelled.</saml2p:StatusMessage></saml2p:Status></saml2p:Response>
