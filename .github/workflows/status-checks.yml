@@ -20,34 +20,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # There is no shared Java workflow, so Maven builds and tests the bridge here.
-  maven:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  go:
+    uses: privacybydesign/github-workflows/.github/workflows/go-checks.yml@v1
     permissions:
       contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
 
-      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
-
-      - name: Build and test
-        run: mvn -B --no-transfer-progress clean verify
-
-  # Builds the Yivi frontend bundle in assets/, as the Dockerfile's assets-build stage does.
+  # Builds the Yivi frontend bundle in assets/, as the Dockerfile's assets stage does.
   assets:
     uses: privacybydesign/github-workflows/.github/workflows/node-checks.yml@v1
     permissions:
       contents: read
     with:
       working-directory: assets
-      node-version: "20" # same as the Dockerfile's assets-build stage
+      node-version: "24" # same as the Dockerfile's assets stage
       scripts: build # "test" starts a Parcel dev server, so it is not run here
       ignore-scripts: true
 
@@ -79,7 +64,7 @@ jobs:
   passed:
     name: Status checks passed
     if: always()
-    needs: [maven, assets, docker, dependency-review, workflow-lint]
+    needs: [go, assets, docker, dependency-review, workflow-lint]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
